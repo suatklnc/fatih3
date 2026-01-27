@@ -3,24 +3,26 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import './Login.css'
 
-function Login() {
+function Register() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [fullName, setFullName] = useState('')
     const [error, setError] = useState(null)
     const [loading, setLoading] = useState(false)
     const navigate = useNavigate()
-    const { login } = useAuth()
+    const { signUp } = useAuth()
 
     const handleSubmit = async (e) => {
         e.preventDefault()
         setError(null)
         setLoading(true)
         try {
-            await login(email, password)
-            navigate('/dashboard')
+            await signUp(email, password, { full_name: fullName })
+            alert('Kayıt başarılı! Giriş yapabilirsiniz.')
+            navigate('/login')
         } catch (error) {
-            console.error('Login error:', error)
-            setError('Giriş başarısız. Lütfen bilgilerinizi kontrol edin.')
+            console.error('Registration error:', error)
+            setError('Kayıt başarısız: ' + error.message)
         } finally {
             setLoading(false)
         }
@@ -30,11 +32,23 @@ function Login() {
         <div className="login-container">
             <div className="login-card">
                 <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Malzeme Yönetim Sistemi</h2>
-                <h3 style={{ textAlign: 'center', marginBottom: '20px', color: '#666' }}>Giriş Yap</h3>
+                <h3 style={{ textAlign: 'center', marginBottom: '20px', color: '#666' }}>Kayıt Ol</h3>
 
                 {error && <div className="error-message">{error}</div>}
 
                 <form onSubmit={handleSubmit}>
+                    <div className="form-group">
+                        <label>Ad Soyad</label>
+                        <input
+                            type="text"
+                            value={fullName}
+                            onChange={(e) => setFullName(e.target.value)}
+                            required
+                            className="form-control"
+                            placeholder="Adınız Soyadınız"
+                        />
+                    </div>
+
                     <div className="form-group">
                         <label>Email Adresi</label>
                         <input
@@ -56,20 +70,21 @@ function Login() {
                             required
                             className="form-control"
                             placeholder="••••••••"
+                            minLength={6}
                         />
                     </div>
 
-                    <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
-                        {loading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
+                    <button type="submit" className="btn btn-success btn-block" disabled={loading}>
+                        {loading ? 'Kayıt Yapılıyor...' : 'Kayıt Ol'}
                     </button>
                 </form>
 
                 <div style={{ marginTop: '20px', textAlign: 'center' }}>
-                    <p>Hesabınız yok mu? <Link to="/register">Kayıt Ol</Link></p>
+                    <p>Zaten hesabınız var mı? <Link to="/login">Giriş Yap</Link></p>
                 </div>
             </div>
         </div>
     )
 }
 
-export default Login
+export default Register

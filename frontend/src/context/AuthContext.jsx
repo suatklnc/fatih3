@@ -35,13 +35,25 @@ export const AuthProvider = ({ children }) => {
         return data
     }
 
+    const signUp = async (email, password, metadata) => {
+        const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+                data: metadata
+            }
+        })
+        if (error) throw error
+        return data
+    }
+
     const logout = async () => {
         const { error } = await supabase.auth.signOut()
         if (error) throw error
     }
 
     return (
-        <AuthContext.Provider value={{ session, user, login, logout, loading }}>
+        <AuthContext.Provider value={{ session, user, login, signUp, logout, loading }}>
             {!loading ? children : <div className="loading" style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Yükleniyor...</div>}
         </AuthContext.Provider>
     )
