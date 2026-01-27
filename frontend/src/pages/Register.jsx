@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { usersApi } from '../services/api'
 import './Login.css'
 
 function Register() {
@@ -17,7 +18,19 @@ function Register() {
         setError(null)
         setLoading(true)
         try {
-            await signUp(email, password, { full_name: fullName })
+            const result = await signUp(email, password, { full_name: fullName })
+
+            // Auth başarılı ise backend veritabanına kaydet
+            if (result.user || result.data?.user) {
+                const user = result.user || result.data.user
+                await usersApi.create({
+                    id: user.id,
+                    email: email,
+                    fullName: fullName,
+                    isActive: true
+                })
+            }
+
             alert('Kayıt başarılı! Giriş yapabilirsiniz.')
             navigate('/login')
         } catch (error) {

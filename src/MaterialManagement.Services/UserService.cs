@@ -69,6 +69,25 @@ public class UserService : IUserService
                 user.Id = Guid.NewGuid();
             }
             
+            // Rol mantığı
+            await EnsureRolesExistAsync();
+            var roles = await GetAllRolesAsync();
+            
+            if (user.Email == "suatkilinc0102@gmail.com")
+            {
+                var patronRole = roles.FirstOrDefault(r => r.Name == "Patron");
+                if (patronRole != null) user.RoleId = patronRole.Id;
+            }
+            else
+            {
+                // Varsayılan rol: Personel (Sadece talep oluşturabilir)
+                if (user.RoleId == Guid.Empty)
+                {
+                    var personelRole = roles.FirstOrDefault(r => r.Name == "Personel");
+                    if (personelRole != null) user.RoleId = personelRole.Id;
+                }
+            }
+            
             user.CreatedAt = DateTime.UtcNow;
             user.UpdatedAt = DateTime.UtcNow;
             
@@ -82,6 +101,35 @@ public class UserService : IUserService
         {
             _logger.LogError(ex, "Error creating user: {Message}", ex.Message);
             throw;
+        }
+    }
+
+    private async Task EnsureRolesExistAsync()
+    {
+        try 
+        {
+            var roles = await GetAllRolesAsync();
+            var requiredRoles = new[] { "Patron", "Yönetici", "Satın Alma", "Personel" };
+            
+            foreach (var roleName in requiredRoles)
+            {
+                if (!roles.Any(r => r.Name == roleName))
+                {
+                    var newRole = new Role
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = roleName,
+                        Description = roleName == "Personel" ? "Standart kullanıcı" : "Yetkili kullanıcı",
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    await _supabaseService.Client.From<Role>().Insert(newRole);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error checking/seeding roles");
+            // Devam et, belki roller vardır ama okuyamadık
         }
     }
 

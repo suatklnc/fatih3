@@ -1,8 +1,15 @@
 import { useState, useEffect } from 'react'
 import { materialRequestsApi, materialsApi, projectsApi } from '../services/api'
+import { useAuth } from '../context/AuthContext'
 import './MaterialRequests.css'
 
 function MaterialRequests() {
+  const { userProfile } = useAuth()
+  const userRole = userProfile?.roleName?.toLowerCase() || ''
+
+  const isPatronOrAdmin = userRole === 'patron' || userRole === 'yönetici'
+  const isPurchasing = userRole === 'satın alma' || userRole === 'satın alma birimi' || isPatronOrAdmin
+
   const [requests, setRequests] = useState([])
   const [materials, setMaterials] = useState([])
   const [projects, setProjects] = useState([])
@@ -395,7 +402,7 @@ function MaterialRequests() {
                   <td>{getPriorityText(request.priority)}</td>
                   <td>{new Date(request.requestDate).toLocaleDateString('tr-TR')}</td>
                   <td onClick={(e) => e.stopPropagation()}>
-                    {request.status === 'pending' && (
+                    {request.status === 'pending' && isPatronOrAdmin && (
                       <>
                         <button
                           className="btn btn-success"
@@ -413,7 +420,7 @@ function MaterialRequests() {
                         </button>
                       </>
                     )}
-                    {request.status === 'approved' && (
+                    {request.status === 'approved' && isPatronOrAdmin && (
                       <button
                         className="btn btn-primary"
                         onClick={() => handleSendToPurchasing(request.id)}
@@ -422,7 +429,7 @@ function MaterialRequests() {
                         Satın Almaya Gönder
                       </button>
                     )}
-                    {request.status === 'sent_to_purchasing' && (
+                    {request.status === 'sent_to_purchasing' && isPurchasing && (
                       <button
                         className="btn btn-info"
                         onClick={() => handleSendToSuppliers(request.id)}
@@ -431,13 +438,15 @@ function MaterialRequests() {
                         Tedarikçilere Gönder
                       </button>
                     )}
-                    <button
-                      className="btn btn-danger"
-                      onClick={() => handleDelete(request.id)}
-                      style={{ fontSize: '12px', padding: '5px 10px', marginLeft: '5px' }}
-                    >
-                      Sil
-                    </button>
+                    {isPatronOrAdmin && (
+                      <button
+                        className="btn btn-danger"
+                        onClick={() => handleDelete(request.id)}
+                        style={{ fontSize: '12px', padding: '5px 10px', marginLeft: '5px' }}
+                      >
+                        Sil
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))

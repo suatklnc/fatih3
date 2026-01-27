@@ -23,12 +23,15 @@ public class UsersController : ControllerBase
         try
         {
             var users = await _userService.GetAllUsersAsync();
+            var roles = await _userService.GetAllRolesAsync();
+            
             var result = users.Select(u => new
             {
                 u.Id,
                 u.Email,
                 u.FullName,
                 u.RoleId,
+                RoleName = roles.FirstOrDefault(r => r.Id == u.RoleId)?.Name,
                 u.CompanyId,
                 u.Phone,
                 u.IsActive,
@@ -53,12 +56,15 @@ public class UsersController : ControllerBase
             if (user == null)
                 return NotFound();
             
+            var roles = await _userService.GetAllRolesAsync();
+            
             return Ok(new
             {
                 user.Id,
                 user.Email,
                 user.FullName,
                 user.RoleId,
+                RoleName = roles.FirstOrDefault(r => r.Id == user.RoleId)?.Name,
                 user.CompanyId,
                 user.Phone,
                 user.IsActive,

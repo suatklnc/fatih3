@@ -48,8 +48,11 @@ function Layout({ children }) {
     { path: '/requests', label: 'Malzeme Talepleri', icon: '📝' },
     { path: '/quotations', label: 'Teklifler', icon: '💰' },
     { path: '/suppliers', label: 'Tedarikçiler', icon: '🏢' },
-    { path: '/users', label: 'Kullanıcılar', icon: '👥' },
+    { path: '/users', label: 'Kullanıcılar', icon: '👥', restricted: true },
   ]
+
+  const userRole = currentUser?.roleName?.toLowerCase() || ''
+  const isPatronOrAdmin = userRole === 'patron' || userRole === 'yönetici'
 
   return (
     <div className="layout">
@@ -102,16 +105,20 @@ function Layout({ children }) {
           </button>
 
           <nav className="sidebar-nav">
-            {menuItems.map(item => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`sidebar-item ${location.pathname === item.path ? 'active' : ''}`}
-              >
-                <span className="sidebar-icon">{item.icon}</span>
-                {sidebarOpen && <span className="sidebar-label">{item.label}</span>}
-              </Link>
-            ))}
+            {menuItems.map(item => {
+              if (item.restricted && !isPatronOrAdmin) return null
+
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`sidebar-item ${location.pathname === item.path ? 'active' : ''}`}
+                >
+                  <span className="sidebar-icon">{item.icon}</span>
+                  {sidebarOpen && <span className="sidebar-label">{item.label}</span>}
+                </Link>
+              )
+            })}
           </nav>
         </aside>
 
