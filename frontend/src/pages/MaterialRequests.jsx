@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { materialRequestsApi, materialsApi, projectsApi } from '../services/api'
+import { materialRequestsApi, materialsApi, projectsApi, suppliersApi } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import './MaterialRequests.css'
 
@@ -13,10 +13,17 @@ function MaterialRequests() {
   const [requests, setRequests] = useState([])
   const [materials, setMaterials] = useState([])
   const [projects, setProjects] = useState([])
+  const [suppliers, setSuppliers] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [selectedRequest, setSelectedRequest] = useState(null)
   const [showDetail, setShowDetail] = useState(false)
+
+  // Supplier Modal States
+  const [showSupplierModal, setShowSupplierModal] = useState(false)
+  const [selectedSupplierIds, setSelectedSupplierIds] = useState([])
+  const [supplierModalLoading, setSupplierModalLoading] = useState(false)
+
   const [formData, setFormData] = useState({
     projectId: '',
     priority: 'normal',
@@ -31,14 +38,16 @@ function MaterialRequests() {
 
   const loadData = async () => {
     try {
-      const [requestsRes, materialsRes, projectsRes] = await Promise.all([
+      const [requestsRes, materialsRes, projectsRes, suppliersRes] = await Promise.all([
         materialRequestsApi.getAll(),
         materialsApi.getAll(),
         projectsApi.getAll(),
+        suppliersApi.getAll()
       ])
       setRequests(requestsRes.data || [])
       setMaterials(materialsRes.data || [])
       setProjects(projectsRes.data || [])
+      setSuppliers(suppliersRes.data || [])
     } catch (error) {
       console.error('Error loading data:', error)
     } finally {
@@ -139,7 +148,7 @@ function MaterialRequests() {
 
   const getMaterialName = (materialId) => {
     const material = materials.find(m => m.id === materialId)
-    return material ? `${material.code} - ${material.name}` : materialId
+    return material ? `${material.code} - ${material.name} ` : materialId
   }
 
   const getPriorityText = (priority) => {
@@ -183,13 +192,39 @@ function MaterialRequests() {
     }
   }
 
-  const handleSendToSuppliers = async (id) => {
+  const handleSendToSuppliers = (id) => {
+    const req = requests.find(r => r.id === id)
+    setSelectedRequest(req)
+    setSelectedSupplierIds([])
+    setShowSupplierModal(true)
+  }
+
+  const handleConfirmSendToSuppliers = async () => {
+    if (selectedSupplierIds.length === 0) {
+      alert('Lütfen en az bir tedarikçi seçiniz.')
+      return
+    }
+
+    setSupplierModalLoading(true)
     try {
-      await materialRequestsApi.sendToSuppliers(id)
+      await materialRequestsApi.sendToSuppliers(selectedRequest.id, selectedSupplierIds)
+      setShowSupplierModal(false)
+      setSelectedRequest(null)
       loadData()
+      alert('Tedarikçilere mail gönderildi ve durum güncellendi.')
     } catch (error) {
       console.error('Error sending to suppliers:', error)
-      alert('Tedarikçilere gönderilirken hata oluştu')
+      alert('Hata oluştu: ' + (error.response?.data?.message || 'Bilinmeyen hata'))
+    } finally {
+      setSupplierModalLoading(false)
+    }
+  }
+
+  const handleSupplierToggle = (supplierId) => {
+    if (selectedSupplierIds.includes(supplierId)) {
+      setSelectedSupplierIds(selectedSupplierIds.filter(id => id !== supplierId))
+    } else {
+      setSelectedSupplierIds([...selectedSupplierIds, supplierId])
     }
   }
 
@@ -210,7 +245,7 @@ function MaterialRequests() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '15px' }}>
               <div><strong>Talep No:</strong> {selectedRequest.requestNumber}</div>
-              <div><strong>Durum:</strong> <span className={`badge ${getStatusBadge(selectedRequest.status)}`}>{getStatusText(selectedRequest.status)}</span></div>
+              <div><strong>Durum:</strong> <span className={`badge ${getStatusBadge(selectedRequest.status)} `}>{getStatusText(selectedRequest.status)}</span></div>
               <div><strong>Proje:</strong> {getProjectName(selectedRequest.projectId)}</div>
               <div><strong>Öncelik:</strong> {getPriorityText(selectedRequest.priority)}</div>
               <div><strong>Talep Tarihi:</strong> {new Date(selectedRequest.requestDate).toLocaleDateString('tr-TR')}</div>
@@ -243,6 +278,61 @@ function MaterialRequests() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Supplier Selection Modal */}
+      {showSupplierModal && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: '500px' }}>
+            <h3>Tedarikçilere Gönder</h3>
+            <p>Lütfen teklif isteği gönderilecek tedarikçileri seçiniz:</p>
+
+            <div className="supplier-list" style={{ maxHeight: '300px', overflowY: 'auto', border: '1px solid #ddd', padding: '10px', marginBottom: '15px', borderRadius: '4px' }}>
+              {suppliers.length === 0 ? (
+                <div style={{ padding: '10px', textAlign: 'center', color: '#666' }}>
+                  Kayıtlı tedarikçi bulunamadı. Lütfen önce Tedarikçiler sayfasından ekleme yapınız.
+                </div>
+              ) : (
+                suppliers.map(sup => (
+                  <div key={sup.id} style={{ padding: '8px', borderBottom: '1px solid #eee', display: 'flex', alignItems: 'center' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', cursor: sup.email ? 'pointer' : 'not-allowed', width: '100%', opacity: sup.email ? 1 : 0.5 }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedSupplierIds.includes(sup.id)}
+                        onChange={() => handleSupplierToggle(sup.id)}
+                        disabled={!sup.email}
+                        style={{ marginRight: '10px' }}
+                      />
+                      <div>
+                        <div style={{ fontWeight: 'bold' }}>{sup.name}</div>
+                        <div style={{ fontSize: '12px', color: '#666' }}>
+                          {sup.email ? sup.email : '(E-posta adresi yok)'}
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                className="btn btn-secondary"
+                onClick={() => setShowSupplierModal(false)}
+                disabled={supplierModalLoading}
+              >
+                İptal
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={handleConfirmSendToSuppliers}
+                disabled={supplierModalLoading || selectedSupplierIds.length === 0}
+              >
+                {supplierModalLoading ? 'Gönderiliyor...' : 'Gönder'}
+              </button>
             </div>
           </div>
         </div>
@@ -395,7 +485,7 @@ function MaterialRequests() {
                   <td>{request.requestNumber}</td>
                   <td>{getProjectName(request.projectId)}</td>
                   <td>
-                    <span className={`badge ${getStatusBadge(request.status)}`}>
+                    <span className={`badge ${getStatusBadge(request.status)} `}>
                       {getStatusText(request.status)}
                     </span>
                   </td>

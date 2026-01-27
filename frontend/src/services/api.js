@@ -25,8 +25,17 @@ export const materialRequestsApi = {
   create: (data) => api.post('/materialrequests', data),
   updateStatus: (id, status) => api.put(`/materialrequests/${id}/status`, { status }),
   sendToPurchasing: (id) => api.put(`/materialrequests/${id}/send-to-purchasing`),
-  sendToSuppliers: (id) => api.put(`/materialrequests/${id}/send-to-suppliers`),
+  sendToSuppliers: (id, supplierIds) => api.put(`/materialrequests/${id}/send-to-suppliers`, supplierIds),
   delete: (id) => api.delete(`/materialrequests/${id}`),
+}
+
+// Suppliers API
+export const suppliersApi = {
+  getAll: () => api.get('/suppliers'),
+  getById: (id) => api.get(`/suppliers/${id}`),
+  create: (data) => api.post('/suppliers', data),
+  update: (id, data) => api.put(`/suppliers/${id}`, data),
+  delete: (id) => api.delete(`/suppliers/${id}`),
 }
 
 // Quotations API

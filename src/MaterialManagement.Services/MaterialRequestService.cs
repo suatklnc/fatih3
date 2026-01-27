@@ -9,11 +9,82 @@ public class MaterialRequestService : IMaterialRequestService
 {
     private readonly SupabaseService _supabaseService;
     private readonly ILogger<MaterialRequestService> _logger;
+    private readonly IEmailService _emailService;
+    private readonly ISupplierService _supplierService;
+    private readonly IMaterialService _materialService;
 
-    public MaterialRequestService(SupabaseService supabaseService, ILogger<MaterialRequestService> logger)
+    public MaterialRequestService(
+        SupabaseService supabaseService, 
+        ILogger<MaterialRequestService> logger,
+        IEmailService emailService,
+        ISupplierService supplierService,
+        IMaterialService materialService)
     {
         _supabaseService = supabaseService;
         _logger = logger;
+        _emailService = emailService;
+        _supplierService = supplierService;
+        _materialService = materialService;
+    }
+
+    // ... (GetAll, GetById, Create, UpdateStatus, SendToPurchasing aynı)
+
+    public async Task<MaterialRequest> SendToSuppliersAsync(Guid id, List<Guid> supplierIds)
+    {
+        try
+        {
+            var request = await GetRequestByIdAsync(id);
+            if (request == null)
+                throw new Exception("Request not found");
+            
+            // Malzeme detaylarını çek (Mail içeriği için)
+            // Performans optimizasyonu yapılabilir (Tek tek çekmek yerine toplu veya cache)
+            // Ancak şimdilik güvenli yol.
+            var materialsText = new System.Text.StringBuilder();
+            foreach (var item in request.Items)
+            {
+                var material = await _materialService.GetMaterialByIdAsync(item.MaterialId);
+                var materialName = material?.Name ?? item.MaterialId.ToString();
+                materialsText.AppendLine($"- {materialName}: {item.Quantity} adet ({item.Notes})");
+            }
+
+            foreach (var supplierId in supplierIds)
+            {
+                var supplier = await _supplierService.GetByIdAsync(supplierId);
+                if (supplier != null && !string.IsNullOrEmpty(supplier.Email))
+                {
+                    string subject = $"Teklif İsteği - Talep No: {request.RequestNumber}";
+                    string body = $@"Sayın {supplier.Name},
+
+Aşağıda listelenen malzemeler için fiyat ve teslim süresi teklifinizi iletmenizi rica ederiz.
+
+Talep No: {request.RequestNumber}
+Son Teklif Tarihi: {request.RequiredDate?.ToShortDateString() ?? "-"}
+
+Malzemeler:
+{materialsText}
+
+İyi çalışmalar.";
+
+                    await _emailService.SendEmailAsync(supplier.Email, subject, body);
+                }
+            }
+            
+            request.Status = "sent_to_suppliers";
+            request.SentToSuppliersAt = DateTime.UtcNow;
+            request.UpdatedAt = DateTime.UtcNow;
+            
+            var response = await _supabaseService.Client
+                .From<MaterialRequest>()
+                .Update(request);
+            
+            return response.Models.First();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error sending request to suppliers: {Id}", id);
+            throw;
+        }
     }
 
     public async Task<List<MaterialRequest>> GetAllRequestsAsync()

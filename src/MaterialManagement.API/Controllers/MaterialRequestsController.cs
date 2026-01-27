@@ -260,18 +260,21 @@ public class MaterialRequestsController : ControllerBase
     }
 
     [HttpPut("{id}/send-to-suppliers")]
-    public async Task<ActionResult<object>> SendToSuppliers(Guid id)
+    public async Task<ActionResult<object>> SendToSuppliers(Guid id, [FromBody] List<Guid> supplierIds)
     {
         try
         {
+            if (supplierIds == null || !supplierIds.Any())
+                return BadRequest(new { message = "En az bir tedarikçi seçmelisiniz." });
+
             var request = await _requestService.GetRequestByIdAsync(id);
             if (request == null)
                 return NotFound();
             
-            if (request.Status != "sent_to_purchasing")
+            if (request.Status != "sent_to_purchasing" && request.Status != "approved") // Esneklik: Onaylıdan da direk gönderebilsin mi? Kullanıcı akışı: Approved -> Purchasing -> Suppliers. Purchasing'de takılmadan geçmek isteyebilir mi? Sistem akışı Purchasing -> Suppliers.
                 return BadRequest(new { message = "Sadece satın almaya iletilmiş talepler tedarikçilere gönderilebilir." });
             
-            var updated = await _requestService.SendToSuppliersAsync(id);
+            var updated = await _requestService.SendToSuppliersAsync(id, supplierIds);
             
             return Ok(new
             {
