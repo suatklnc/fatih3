@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { usersApi } from '../services/api'
+import { useAuth } from '../context/AuthContext'
 import './Layout.css'
 
 function Layout({ children }) {
   const location = useLocation()
+  const navigate = useNavigate()
+  const { user: authUser, logout } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [currentUser, setCurrentUser] = useState(null)
 
@@ -12,15 +15,30 @@ function Layout({ children }) {
     const loadCurrentUser = async () => {
       try {
         const res = await usersApi.getAll()
-        if (res.data && res.data.length > 0) {
-          setCurrentUser(res.data[0])
+        if (res.data) {
+          if (authUser?.email) {
+            const matched = res.data.find(u => u.email === authUser.email)
+            if (matched) setCurrentUser(matched)
+            else if (res.data.length > 0) setCurrentUser(res.data[0])
+          } else if (res.data.length > 0) {
+            setCurrentUser(res.data[0])
+          }
         }
       } catch (error) {
         console.error('Error loading user:', error)
       }
     }
     loadCurrentUser()
-  }, [])
+  }, [authUser])
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+      navigate('/login')
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
+  }
 
   const menuItems = [
     { path: '/dashboard', label: 'Dashboard', icon: '📊' },
@@ -64,6 +82,13 @@ function Layout({ children }) {
             <span>Yükleniyor...</span>
           )}
           <div className="notifications">🔔</div>
+          <button
+            onClick={handleLogout}
+            className="btn btn-danger"
+            style={{ marginLeft: '10px', padding: '5px 10px', fontSize: '13px' }}
+          >
+            Çıkış
+          </button>
         </div>
       </nav>
 
