@@ -119,7 +119,7 @@ public class CompanyService : ICompanyService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting company: {Id}", id);
-            return false;
+            throw;
         }
     }
 }

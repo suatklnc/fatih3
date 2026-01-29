@@ -61,13 +61,15 @@ function Materials() {
 
   const handleDelete = async (id) => {
     if (!confirm('Bu malzemeyi silmek istediğinize emin misiniz?')) return
-    
+
     try {
       await materialsApi.delete(id)
       loadMaterials()
+      alert('Malzeme başarıyla silindi.')
     } catch (error) {
       console.error('Error deleting material:', error)
-      alert('Malzeme silinirken hata oluştu')
+      const message = error.response?.data?.message || 'Malzeme silinirken hata oluştu'
+      alert(message)
     }
   }
 

@@ -144,7 +144,15 @@ public class MaterialsController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting material: {Id}", id);
-            return StatusCode(500, "Internal server error");
+            
+            // Check for foreign key violation
+            if (ex.Message.Contains("violates foreign key constraint") || 
+                (ex.InnerException != null && ex.InnerException.Message.Contains("violates foreign key constraint")))
+            {
+                return BadRequest(new { message = "Bu malzeme kullanımda olduğu için silinemez. Lütfen önce ilişkili kayıtları (Teklifler veya Talepler) silin." });
+            }
+
+            return StatusCode(500, new { message = "Silme işlemi sırasında bir hata oluştu: " + ex.Message });
         }
     }
 }

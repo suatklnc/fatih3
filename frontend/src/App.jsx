@@ -11,6 +11,7 @@ import Projects from './pages/Projects'
 import Suppliers from './pages/Suppliers'
 import Companies from './pages/Companies'
 import Users from './pages/Users'
+import SupplierQuoteForm from './pages/SupplierQuoteForm'
 import './App.css'
 
 const PrivateRoute = ({ children }) => {
@@ -40,6 +41,8 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
+          {/* Public routes */}
+          <Route path="/supplier-quote/:token" element={<SupplierQuoteForm />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 

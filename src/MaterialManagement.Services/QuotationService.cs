@@ -176,11 +176,17 @@ public class QuotationService : IQuotationService
     {
         try
         {
-            var quotation = await GetQuotationByIdAsync(id);
-            if (quotation != null)
-            {
-                await quotation.Delete<Quotation>();
-            }
+            // Delete items first (manual cascade)
+            await _supabaseService.Client
+                .From<QuotationItem>()
+                .Filter("quotation_id", Supabase.Postgrest.Constants.Operator.Equals, id.ToString())
+                .Delete();
+
+            // Delete quotation
+            await _supabaseService.Client
+                .From<Quotation>()
+                .Filter("id", Supabase.Postgrest.Constants.Operator.Equals, id.ToString())
+                .Delete();
             
             return true;
         }

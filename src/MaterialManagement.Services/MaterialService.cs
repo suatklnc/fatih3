@@ -105,18 +105,17 @@ public class MaterialService : IMaterialService
     {
         try
         {
-            var material = await GetMaterialByIdAsync(id);
-            if (material != null)
-            {
-                await material.Delete<Material>();
-            }
+            await _supabaseService.Client
+                .From<Material>()
+                .Filter("id", Supabase.Postgrest.Constants.Operator.Equals, id.ToString())
+                .Delete();
             
             return true;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting material: {Id}", id);
-            return false;
+            throw; // Hatayı yutma, fırlat
         }
     }
 }

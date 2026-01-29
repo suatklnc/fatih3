@@ -38,18 +38,22 @@ function MaterialRequests() {
 
   const loadData = async () => {
     try {
+      console.log('Loading data...')
       const [requestsRes, materialsRes, projectsRes, suppliersRes] = await Promise.all([
         materialRequestsApi.getAll(),
         materialsApi.getAll(),
         projectsApi.getAll(),
         suppliersApi.getAll()
       ])
+      console.log('Projects response:', projectsRes)
+      console.log('Projects data:', projectsRes.data)
       setRequests(requestsRes.data || [])
       setMaterials(materialsRes.data || [])
       setProjects(projectsRes.data || [])
       setSuppliers(suppliersRes.data || [])
     } catch (error) {
       console.error('Error loading data:', error)
+      console.error('Error details:', error.response)
     } finally {
       setLoading(false)
     }

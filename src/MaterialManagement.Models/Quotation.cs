@@ -1,5 +1,6 @@
 using Supabase.Postgrest.Attributes;
 using Supabase.Postgrest.Models;
+using Newtonsoft.Json;
 
 namespace MaterialManagement.Models;
 
@@ -51,9 +52,19 @@ public class Quotation : BaseModel
     [Column("updated_at")]
     public DateTime UpdatedAt { get; set; }
     
+    // Navigation properties - not mapped to database
+    [JsonIgnore]
     public MaterialRequest? Request { get; set; }
+    
+    [JsonIgnore]
     public Supplier? Supplier { get; set; }
+    
+    [JsonIgnore]
     public UserProfile? SubmittedByUser { get; set; }
+    
+    [JsonIgnore]
     public UserProfile? ApprovedByUser { get; set; }
+    
+    [JsonIgnore]
     public List<QuotationItem> Items { get; set; } = new();
 }

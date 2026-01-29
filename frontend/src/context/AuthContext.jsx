@@ -19,8 +19,13 @@ export const AuthProvider = ({ children }) => {
                 setUserProfile(res.data)
             }
         } catch (error) {
-            console.error('Error fetching user profile:', error)
-            // Fallback: belki henüz oluşmadı, register akışında oluşacak
+            // 404 hatası: kullanıcı profili henüz oluşturulmamış olabilir
+            if (error.response?.status === 404) {
+                console.log('User profile not found in database, user may need to complete registration')
+                setUserProfile(null)
+            } else {
+                console.error('Error fetching user profile:', error)
+            }
         }
     }
 

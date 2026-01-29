@@ -76,9 +76,11 @@ function Companies() {
         try {
             await companiesApi.delete(id)
             loadCompanies()
+            alert('Firma başarıyla silindi.')
         } catch (error) {
             console.error('Error deleting company:', error)
-            alert('Firma silinirken hata oluştu')
+            const message = error.response?.data?.message || 'Firma silinirken hata oluştu'
+            alert(message)
         }
     }
 

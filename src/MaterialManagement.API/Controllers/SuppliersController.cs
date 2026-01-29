@@ -18,9 +18,31 @@ public class SuppliersController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<Supplier>>> GetAll()
+    public async Task<ActionResult<object>> GetAll()
     {
-        return Ok(await _service.GetAllAsync());
+        try
+        {
+            var suppliers = await _service.GetAllAsync();
+            var result = suppliers.Select(s => new
+            {
+                s.Id,
+                s.Name,
+                s.TaxNumber,
+                s.Address,
+                s.Phone,
+                s.Email,
+                s.ContactPerson,
+                s.IsActive,
+                s.CreatedAt,
+                s.UpdatedAt
+            }).ToList();
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting all suppliers");
+            return StatusCode(500, new { message = ex.Message });
+        }
     }
 
     [HttpGet("{id}")]

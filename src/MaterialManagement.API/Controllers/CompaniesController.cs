@@ -126,16 +126,25 @@ public class CompaniesController : ControllerBase
     {
         try
         {
-            var result = await _companyService.DeleteCompanyAsync(id);
-            if (!result)
-                return NotFound();
-            
+            await _companyService.DeleteCompanyAsync(id);
             return NoContent();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting company: {Id}", id);
-            return StatusCode(500, new { message = ex.Message });
+            
+            if (ex.Message.Contains("violates foreign key constraint") || 
+                (ex.InnerException != null && ex.InnerException.Message.Contains("violates foreign key constraint")))
+            {
+                if (ex.Message.Contains("user_profiles") || (ex.InnerException != null && ex.InnerException.Message.Contains("user_profiles")))
+                {
+                    return BadRequest(new { message = "Bu firma sistemde kayıtlı KULLANICILAR (Personel) ile ilişkilidir. Silmek için önce firmaya bağlı kullanıcıları güncelleyin veya silin." });
+                }
+                
+                return BadRequest(new { message = "Bu firma kullanımda olduğu için silinemez. Lütfen önce ilişkili kayıtları silin." });
+            }
+
+            return StatusCode(500, new { message = "Silme işlemi sırasında bir hata oluştu: " + ex.Message });
         }
     }
 }
