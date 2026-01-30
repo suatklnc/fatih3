@@ -80,6 +80,13 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseAuthorization();
+
+// API controllers
 app.MapControllers();
+
+// Production / Coolify: serve frontend static files (wwwroot filled by Dockerfile)
+app.UseDefaultFiles();
+app.UseStaticFiles();
+app.MapFallbackToFile("index.html");
 
 app.Run();
