@@ -13,6 +13,8 @@ function MaterialRequests() {
 
   const [requests, setRequests] = useState([])
   const [materials, setMaterials] = useState([])
+  const [filteredMaterials, setFilteredMaterials] = useState([])
+  const [materialSearchQueries, setMaterialSearchQueries] = useState({})
   const [projects, setProjects] = useState([])
   const [suppliers, setSuppliers] = useState([])
   const [loading, setLoading] = useState(true)
@@ -52,8 +54,10 @@ function MaterialRequests() {
       ])
       console.log('Projects response:', projectsRes)
       console.log('Projects data:', projectsRes.data)
+      const materialsData = materialsRes.data || []
       setRequests(requestsRes.data || [])
-      setMaterials(materialsRes.data || [])
+      setMaterials(materialsData)
+      setFilteredMaterials(materialsData)
       setProjects(projectsRes.data || [])
       setSuppliers(suppliersRes.data || [])
     } catch (error) {
@@ -82,6 +86,23 @@ function MaterialRequests() {
     const newItems = [...formData.items]
     newItems[index][field] = value
     setFormData({ ...formData, items: newItems })
+    if (field === 'materialId') {
+      setMaterialSearchQueries(prev => ({ ...prev, [index]: '' }))
+    }
+  }
+
+  const handleMaterialSearch = (index, query) => {
+    setMaterialSearchQueries(prev => ({ ...prev, [index]: query }))
+  }
+
+  const getFilteredMaterialsForItem = (index) => {
+    const query = (materialSearchQueries[index] || '').toLowerCase().trim()
+    if (!query) return materials
+    return materials.filter(m => 
+      (m.code?.toLowerCase().includes(query) || '') ||
+      (m.name?.toLowerCase().includes(query) || '') ||
+      (m.category?.toLowerCase().includes(query) || '')
+    )
   }
 
   const handleSubmit = async (e) => {
@@ -413,55 +434,78 @@ function MaterialRequests() {
                 </button>
               </div>
 
-              {formData.items.map((item, index) => (
-                <div key={index} className="request-item">
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Malzeme</label>
-                      <select
-                        required
-                        value={item.materialId}
-                        onChange={(e) => handleItemChange(index, 'materialId', e.target.value)}
-                      >
-                        <option value="">Seçiniz</option>
-                        {materials.map((m) => (
-                          <option key={m.id} value={m.id}>
-                            {m.code} - {m.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="form-group">
-                      <label>Miktar</label>
-                      <input
-                        type="number"
-                        required
-                        step="0.01"
-                        value={item.quantity}
-                        onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)}
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Not</label>
-                      <input
-                        type="text"
-                        value={item.notes}
-                        onChange={(e) => handleItemChange(index, 'notes', e.target.value)}
-                      />
-                    </div>
-                    <div className="form-group" style={{ display: 'flex', alignItems: 'flex-end' }}>
-                      <button
-                        type="button"
-                        className="btn btn-danger"
-                        onClick={() => handleRemoveItem(index)}
-                        style={{ fontSize: '12px', padding: '5px 10px' }}
-                      >
-                        Sil
-                      </button>
+              {formData.items.map((item, index) => {
+                const filteredMats = getFilteredMaterialsForItem(index)
+                return (
+                  <div key={index} className="request-item">
+                    <div className="form-row">
+                      <div className="form-group" style={{ flex: 1 }}>
+                        <label>Malzeme</label>
+                        <input
+                          type="text"
+                          placeholder="🔍 Malzeme ara (kod, ad, kategori)..."
+                          value={materialSearchQueries[index] || ''}
+                          onChange={(e) => handleMaterialSearch(index, e.target.value)}
+                          style={{
+                            width: '100%',
+                            padding: '8px',
+                            border: '1px solid #ddd',
+                            borderRadius: '4px',
+                            marginBottom: '5px',
+                            fontSize: '14px'
+                          }}
+                        />
+                        <select
+                          required
+                          value={item.materialId}
+                          onChange={(e) => handleItemChange(index, 'materialId', e.target.value)}
+                          style={{ width: '100%' }}
+                        >
+                          <option value="">Seçiniz</option>
+                          {filteredMats.map((m) => (
+                            <option key={m.id} value={m.id}>
+                              {m.code} - {m.name} {m.category ? `(${m.category})` : ''}
+                            </option>
+                          ))}
+                        </select>
+                        {filteredMats.length === 0 && (materialSearchQueries[index] || '').trim() && (
+                          <div style={{ fontSize: '12px', color: '#999', marginTop: '5px' }}>
+                            Arama sonucu bulunamadı
+                          </div>
+                        )}
+                      </div>
+                      <div className="form-group">
+                        <label>Miktar</label>
+                        <input
+                          type="number"
+                          required
+                          step="0.01"
+                          value={item.quantity}
+                          onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Not</label>
+                        <input
+                          type="text"
+                          value={item.notes}
+                          onChange={(e) => handleItemChange(index, 'notes', e.target.value)}
+                        />
+                      </div>
+                      <div className="form-group" style={{ display: 'flex', alignItems: 'flex-end' }}>
+                        <button
+                          type="button"
+                          className="btn btn-danger"
+                          onClick={() => handleRemoveItem(index)}
+                          style={{ fontSize: '12px', padding: '5px 10px' }}
+                        >
+                          Sil
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
 
             <button type="submit" className="btn btn-primary">Talep Oluştur</button>

@@ -4,6 +4,9 @@ import './Materials.css'
 
 function Materials() {
   const [materials, setMaterials] = useState([])
+  const [filteredMaterials, setFilteredMaterials] = useState([])
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedMaterials, setSelectedMaterials] = useState(new Set())
   const [loading, setLoading] = useState(true)
   const [importLoading, setImportLoading] = useState(false)
   const [showForm, setShowForm] = useState(false)
@@ -24,13 +27,30 @@ function Materials() {
   const loadMaterials = async () => {
     try {
       const response = await materialsApi.getAll()
-      setMaterials(response.data || [])
+      const materialsData = response.data || []
+      setMaterials(materialsData)
+      setFilteredMaterials(materialsData)
     } catch (error) {
       console.error('Error loading materials:', error)
     } finally {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredMaterials(materials)
+      return
+    }
+    const query = searchQuery.toLowerCase().trim()
+    const filtered = materials.filter(m => 
+      (m.code?.toLowerCase().includes(query) || '') ||
+      (m.name?.toLowerCase().includes(query) || '') ||
+      (m.category?.toLowerCase().includes(query) || '') ||
+      (m.description?.toLowerCase().includes(query) || '')
+    )
+    setFilteredMaterials(filtered)
+  }, [searchQuery, materials])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -66,11 +86,68 @@ function Materials() {
     try {
       await materialsApi.delete(id)
       loadMaterials()
+      setSelectedMaterials(prev => {
+        const next = new Set(prev)
+        next.delete(id)
+        return next
+      })
       alert('Malzeme başarıyla silindi.')
     } catch (error) {
       console.error('Error deleting material:', error)
       const message = error.response?.data?.message || 'Malzeme silinirken hata oluştu'
       alert(message)
+    }
+  }
+
+  const handleToggleSelect = (id) => {
+    setSelectedMaterials(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }
+
+  const handleSelectAll = () => {
+    if (selectedMaterials.size === filteredMaterials.length) {
+      setSelectedMaterials(new Set())
+    } else {
+      setSelectedMaterials(new Set(filteredMaterials.map(m => m.id)))
+    }
+  }
+
+  const handleBulkDelete = async () => {
+    if (selectedMaterials.size === 0) {
+      alert('Lütfen silmek için en az bir malzeme seçiniz.')
+      return
+    }
+    const count = selectedMaterials.size
+    if (!confirm(`${count} malzemeyi silmek istediğinize emin misiniz?`)) return
+
+    const ids = Array.from(selectedMaterials)
+    let successCount = 0
+    let failCount = 0
+
+    for (const id of ids) {
+      try {
+        await materialsApi.delete(id)
+        successCount++
+      } catch (error) {
+        console.error(`Error deleting material ${id}:`, error)
+        failCount++
+      }
+    }
+
+    loadMaterials()
+    setSelectedMaterials(new Set())
+    
+    if (failCount === 0) {
+      alert(`${successCount} malzeme başarıyla silindi.`)
+    } else {
+      alert(`${successCount} malzeme silindi, ${failCount} malzeme silinirken hata oluştu.`)
     }
   }
 
@@ -100,7 +177,7 @@ function Materials() {
     <div className="materials">
       <div className="page-header">
         <h1>Malzeme Havuzu</h1>
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
           <input
             type="file"
             accept=".xlsx,.xls"
@@ -115,6 +192,44 @@ function Materials() {
           <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
             {showForm ? 'İptal' : '+ Yeni Malzeme'}
           </button>
+          {selectedMaterials.size > 0 && (
+            <button className="btn btn-danger" onClick={handleBulkDelete}>
+              🗑️ Seçili Malzemeleri Sil ({selectedMaterials.size})
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="card" style={{ marginBottom: '20px' }}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <input
+            type="text"
+            placeholder="🔍 Malzeme ara (kod, ad, kategori, açıklama)..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              flex: '1',
+              minWidth: '250px',
+              padding: '10px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              fontSize: '14px'
+            }}
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              style={{
+                padding: '10px 15px',
+                background: '#f5f5f5',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              Temizle
+            </button>
+          )}
         </div>
       </div>
 
@@ -204,9 +319,26 @@ function Materials() {
       )}
 
       <div className="card">
+        {filteredMaterials.length > 0 && (
+          <div style={{ padding: '10px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={selectedMaterials.size === filteredMaterials.length && filteredMaterials.length > 0}
+                onChange={handleSelectAll}
+                style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+              />
+              <span>Tümünü Seç ({selectedMaterials.size} seçili)</span>
+            </label>
+            <span style={{ color: '#666', fontSize: '14px' }}>
+              {filteredMaterials.length} malzeme gösteriliyor {materials.length !== filteredMaterials.length && `(${materials.length} toplam)`}
+            </span>
+          </div>
+        )}
         <table>
           <thead>
             <tr>
+              <th style={{ width: '40px' }}></th>
               <th>Kod</th>
               <th>Ad</th>
               <th>Birim</th>
@@ -217,15 +349,23 @@ function Materials() {
             </tr>
           </thead>
           <tbody>
-            {materials.length === 0 ? (
+            {filteredMaterials.length === 0 ? (
               <tr>
-                <td colSpan="7" style={{ textAlign: 'center', padding: '20px' }}>
-                  Henüz malzeme eklenmemiş
+                <td colSpan="8" style={{ textAlign: 'center', padding: '20px' }}>
+                  {searchQuery ? 'Arama sonucu bulunamadı' : 'Henüz malzeme eklenmemiş'}
                 </td>
               </tr>
             ) : (
-              materials.map((material) => (
-                <tr key={material.id}>
+              filteredMaterials.map((material) => (
+                <tr key={material.id} style={{ backgroundColor: selectedMaterials.has(material.id) ? '#f0f8ff' : 'transparent' }}>
+                  <td style={{ textAlign: 'center' }}>
+                    <input
+                      type="checkbox"
+                      checked={selectedMaterials.has(material.id)}
+                      onChange={() => handleToggleSelect(material.id)}
+                      style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                    />
+                  </td>
                   <td>{material.code}</td>
                   <td>{material.name}</td>
                   <td>{material.unit}</td>
