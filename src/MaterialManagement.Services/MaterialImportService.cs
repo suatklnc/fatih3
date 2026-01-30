@@ -74,6 +74,9 @@ public class MaterialImportService : IMaterialImportService
             }
         }
 
+        // Önce tüm malzemeleri parse et
+        var materialsToImport = new List<Material>();
+        
         for (var rowNum = 2; rowNum <= lastRow; rowNum++)
         {
             var row = worksheet.Row(rowNum);
@@ -107,8 +110,7 @@ public class MaterialImportService : IMaterialImportService
                     MinStockLevel = GetCellDecimal(row, colMap.MinStockLevel)
                 };
 
-                await _materialService.CreateMaterialAsync(material);
-                result.Imported++;
+                materialsToImport.Add(material);
             }
             catch (Exception ex)
             {
@@ -119,6 +121,37 @@ public class MaterialImportService : IMaterialImportService
                 else if (result.Errors.Count == 5)
                     result.Errors.Add("... (diğer hatalar log dosyasında)");
                 result.Skipped++;
+            }
+        }
+
+        // Toplu ekleme yap (batch insert)
+        if (materialsToImport.Count > 0)
+        {
+            _logger.LogInformation("{Count} malzeme toplu olarak ekleniyor...", materialsToImport.Count);
+            try
+            {
+                var imported = await _materialService.CreateManyAsync(materialsToImport);
+                result.Imported = imported.Count;
+                result.Skipped += (materialsToImport.Count - imported.Count);
+                _logger.LogInformation("{Imported} malzeme başarıyla eklendi", imported.Count);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Toplu ekleme hatası, tek tek ekleme deneniyor...");
+                // Fallback: tek tek ekle
+                foreach (var material in materialsToImport)
+                {
+                    try
+                    {
+                        await _materialService.CreateMaterialAsync(material);
+                        result.Imported++;
+                    }
+                    catch (Exception innerEx)
+                    {
+                        _logger.LogWarning(innerEx, "Malzeme eklenemedi: {Code}", material.Code);
+                        result.Skipped++;
+                    }
+                }
             }
         }
 

@@ -155,7 +155,7 @@ public class MaterialsController : ControllerBase
         }
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
         try
@@ -178,6 +178,30 @@ public class MaterialsController : ControllerBase
             }
 
             return StatusCode(500, new { message = "Silme işlemi sırasında bir hata oluştu: " + ex.Message });
+        }
+    }
+
+    [HttpDelete("delete-all")]
+    public async Task<ActionResult<object>> DeleteAll()
+    {
+        try
+        {
+            _logger.LogInformation("Tüm malzemeler siliniyor...");
+            var deletedCount = await _materialService.DeleteAllAsync();
+            _logger.LogInformation("{Count} malzeme silindi", deletedCount);
+            return Ok(new { deleted = deletedCount, message = $"{deletedCount} malzeme silindi." });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Toplu silme hatası");
+            
+            if (ex.Message.Contains("violates foreign key constraint") || 
+                (ex.InnerException != null && ex.InnerException.Message.Contains("violates foreign key constraint")))
+            {
+                return BadRequest(new { message = "Bazı malzemeler kullanımda olduğu için silinemedi. Önce ilişkili talep ve teklifleri silin." });
+            }
+            
+            return StatusCode(500, new { message = "Toplu silme hatası: " + ex.Message });
         }
     }
 }

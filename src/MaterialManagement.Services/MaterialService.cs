@@ -21,11 +21,31 @@ public class MaterialService : IMaterialService
     {
         try
         {
-            var response = await _supabaseService.Client
-                .From<Material>()
-                .Get();
+            // Supabase varsayılan 1000 satır limiti var, pagination ile tümünü çek
+            var allMaterials = new List<Material>();
+            var pageSize = 1000;
+            var offset = 0;
             
-            return response.Models;
+            while (true)
+            {
+                var response = await _supabaseService.Client
+                    .From<Material>()
+                    .Offset(offset)
+                    .Limit(pageSize)
+                    .Get();
+                
+                if (response.Models.Count == 0)
+                    break;
+                    
+                allMaterials.AddRange(response.Models);
+                
+                if (response.Models.Count < pageSize)
+                    break;
+                    
+                offset += pageSize;
+            }
+            
+            return allMaterials;
         }
         catch (Exception ex)
         {
@@ -79,6 +99,53 @@ public class MaterialService : IMaterialService
         }
     }
 
+    public async Task<List<Material>> CreateManyAsync(List<Material> materials)
+    {
+        var result = new List<Material>();
+        var batchSize = 500; // Supabase batch limit
+        
+        foreach (var material in materials)
+        {
+            if (material.Id == Guid.Empty)
+                material.Id = Guid.NewGuid();
+            material.CreatedAt = DateTime.UtcNow;
+            material.UpdatedAt = DateTime.UtcNow;
+        }
+        
+        // Batch halinde ekle
+        for (var i = 0; i < materials.Count; i += batchSize)
+        {
+            var batch = materials.Skip(i).Take(batchSize).ToList();
+            try
+            {
+                var response = await _supabaseService.Client
+                    .From<Material>()
+                    .Insert(batch);
+                result.AddRange(response.Models);
+                _logger.LogInformation("Batch {BatchNum} eklendi: {Count} malzeme", (i / batchSize) + 1, batch.Count);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Batch {BatchNum} eklenirken hata: {Message}", (i / batchSize) + 1, ex.Message);
+                // Hata olursa tek tek dene
+                foreach (var m in batch)
+                {
+                    try
+                    {
+                        var single = await _supabaseService.Client.From<Material>().Insert(m);
+                        result.AddRange(single.Models);
+                    }
+                    catch (Exception innerEx)
+                    {
+                        _logger.LogWarning(innerEx, "Malzeme eklenemedi: {Code}", m.Code);
+                    }
+                }
+            }
+        }
+        
+        return result;
+    }
+
     public async Task<Material> UpdateMaterialAsync(Guid id, Material material)
     {
         try
@@ -116,6 +183,51 @@ public class MaterialService : IMaterialService
         {
             _logger.LogError(ex, "Error deleting material: {Id}", id);
             throw; // Hatayı yutma, fırlat
+        }
+    }
+
+    public async Task<int> DeleteAllAsync()
+    {
+        try
+        {
+            // Önce tüm malzemeleri çek
+            var allMaterials = await GetAllMaterialsAsync();
+            var totalCount = allMaterials.Count;
+            
+            if (totalCount == 0)
+                return 0;
+            
+            // Batch halinde sil (Supabase'de toplu silme için ID listesi kullan)
+            var batchSize = 100;
+            var deleted = 0;
+            
+            for (var i = 0; i < allMaterials.Count; i += batchSize)
+            {
+                var batch = allMaterials.Skip(i).Take(batchSize).ToList();
+                foreach (var material in batch)
+                {
+                    try
+                    {
+                        await _supabaseService.Client
+                            .From<Material>()
+                            .Filter("id", Supabase.Postgrest.Constants.Operator.Equals, material.Id.ToString())
+                            .Delete();
+                        deleted++;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Malzeme silinemedi: {Id} - {Code}", material.Id, material.Code);
+                    }
+                }
+                _logger.LogInformation("Silme batch {BatchNum}: {Deleted}/{Total}", (i / batchSize) + 1, deleted, totalCount);
+            }
+            
+            return deleted;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting all materials");
+            throw;
         }
     }
 }

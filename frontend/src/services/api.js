@@ -16,6 +16,7 @@ export const materialsApi = {
   create: (data) => api.post('/materials', data),
   update: (id, data) => api.put(`/materials/${id}`, data),
   delete: (id) => api.delete(`/materials/${id}`),
+  deleteAll: () => api.delete('/materials/delete-all'),
   importFromExcel: (file) => {
     const formData = new FormData()
     formData.append('file', file)

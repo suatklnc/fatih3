@@ -151,6 +151,28 @@ function Materials() {
     }
   }
 
+  const handleDeleteAll = async () => {
+    if (materials.length === 0) {
+      alert('Silinecek malzeme bulunamadı.')
+      return
+    }
+    if (!confirm(`UYARI: Tüm malzemeleri (${materials.length} adet) silmek istediğinize emin misiniz?\n\nBu işlem geri alınamaz!`)) return
+    if (!confirm('Bu işlem TÜM malzemeleri kalıcı olarak silecek. Devam etmek istiyor musunuz?')) return
+
+    setLoading(true)
+    try {
+      const response = await materialsApi.deleteAll()
+      alert(response.data?.message || 'Tüm malzemeler silindi.')
+      loadMaterials()
+      setSelectedMaterials(new Set())
+    } catch (error) {
+      console.error('Error deleting all materials:', error)
+      alert('Toplu silme hatası: ' + (error.response?.data?.message || error.message))
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleImportExcel = async (e) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -195,6 +217,15 @@ function Materials() {
           {selectedMaterials.size > 0 && (
             <button className="btn btn-danger" onClick={handleBulkDelete}>
               🗑️ Seçili Malzemeleri Sil ({selectedMaterials.size})
+            </button>
+          )}
+          {materials.length > 0 && (
+            <button 
+              className="btn" 
+              onClick={handleDeleteAll}
+              style={{ background: '#8B0000', color: 'white' }}
+            >
+              ⚠️ Tümünü Sil ({materials.length})
             </button>
           )}
         </div>
