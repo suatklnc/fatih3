@@ -1,8 +1,13 @@
 import { useState, useEffect } from 'react'
 import { quotationsApi, materialRequestsApi, materialsApi, suppliersApi } from '../services/api'
+import { useAuth } from '../context/AuthContext'
 import './Quotations.css'
 
 function Quotations() {
+  const { userProfile } = useAuth()
+  const userRole = (userProfile?.roleName || '').toLowerCase().trim()
+  const isPatronOrAdmin = userRole === 'patron' || userRole === 'yönetici'
+
   const [quotations, setQuotations] = useState([])
   const [requests, setRequests] = useState([])
   const [materials, setMaterials] = useState([])
@@ -225,13 +230,15 @@ function Quotations() {
                         </button>
                       </>
                     )}
-                    <button
-                      className="btn btn-danger"
-                      onClick={() => handleDelete(quotation.id)}
-                      style={{ fontSize: '12px', padding: '5px 10px' }}
-                    >
-                      Sil
-                    </button>
+                    {isPatronOrAdmin && (
+                      <button
+                        className="btn btn-danger"
+                        onClick={() => handleDelete(quotation.id)}
+                        style={{ fontSize: '12px', padding: '5px 10px' }}
+                      >
+                        Sil
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))
@@ -346,12 +353,14 @@ function Quotations() {
                     </button>
                   </>
                 )}
-                <button
-                  className="btn btn-danger"
-                  onClick={() => handleDelete(selectedQuotation.id)}
-                >
-                  🗑️ Sil
-                </button>
+                {isPatronOrAdmin && (
+                  <button
+                    className="btn btn-danger"
+                    onClick={() => handleDelete(selectedQuotation.id)}
+                  >
+                    🗑️ Sil
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -436,13 +445,15 @@ function Quotations() {
                               </button>
                             </>
                           )}
-                          <button
-                            className="btn btn-danger"
-                            onClick={() => handleDelete(q.id)}
-                            style={{ fontSize: '12px' }}
-                          >
-                            Sil
-                          </button>
+                          {isPatronOrAdmin && (
+                            <button
+                              className="btn btn-danger"
+                              onClick={() => handleDelete(q.id)}
+                              style={{ fontSize: '12px' }}
+                            >
+                              Sil
+                            </button>
+                          )}
                         </div>
                       </div>
                     )

@@ -1,8 +1,13 @@
 import { useState, useEffect } from 'react'
 import { materialsApi } from '../services/api'
+import { useAuth } from '../context/AuthContext'
 import './Materials.css'
 
 function Materials() {
+  const { userProfile } = useAuth()
+  const userRole = (userProfile?.roleName || '').toLowerCase().trim()
+  const isPatronOrAdmin = userRole === 'patron' || userRole === 'yönetici'
+
   const [materials, setMaterials] = useState([])
   const [filteredMaterials, setFilteredMaterials] = useState([])
   const [searchQuery, setSearchQuery] = useState('')
@@ -214,12 +219,12 @@ function Materials() {
           <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
             {showForm ? 'İptal' : '+ Yeni Malzeme'}
           </button>
-          {selectedMaterials.size > 0 && (
+          {isPatronOrAdmin && selectedMaterials.size > 0 && (
             <button className="btn btn-danger" onClick={handleBulkDelete}>
               🗑️ Seçili Malzemeleri Sil ({selectedMaterials.size})
             </button>
           )}
-          {materials.length > 0 && (
+          {isPatronOrAdmin && materials.length > 0 && (
             <button 
               className="btn" 
               onClick={handleDeleteAll}
@@ -405,13 +410,15 @@ function Materials() {
                   <td>{material.stockQuantity}</td>
                   <td>{material.minStockLevel}</td>
                   <td>
-                    <button
-                      className="btn btn-danger"
-                      onClick={() => handleDelete(material.id)}
-                      style={{ fontSize: '12px', padding: '5px 10px' }}
-                    >
-                      Sil
-                    </button>
+                    {isPatronOrAdmin && (
+                      <button
+                        className="btn btn-danger"
+                        onClick={() => handleDelete(material.id)}
+                        style={{ fontSize: '12px', padding: '5px 10px' }}
+                      >
+                        Sil
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))
