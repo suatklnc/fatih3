@@ -366,8 +366,9 @@ function Materials() {
             </span>
           </div>
         )}
-        <table>
-          <thead>
+        <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
+        <table style={{ width: '100%' }}>
+          <thead style={{ position: 'sticky', top: 0, background: '#f8f9fa', zIndex: 1 }}>
             <tr>
               <th style={{ width: '40px' }}></th>
               <th>Kod</th>
@@ -417,6 +418,7 @@ function Materials() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   )
