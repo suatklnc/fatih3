@@ -128,7 +128,7 @@ public class MaterialRequestService : IMaterialRequestService
                                     </td>
                                     <td style=""width: 50%; padding: 5px 0;"">
                                         <span style=""color: #666; font-size: 12px;"">Son Teklif Tarihi:</span><br>
-                                        <strong style=""color: #e74c3c; font-size: 14px;"">{request.RequiredDate?.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("tr-TR")) ?? "Belirtilmemiş"}</strong>
+                                        <strong style=""color: #e74c3c; font-size: 14px;"">{request.RequiredDate?.ToString("dd.MM.yyyy", System.Globalization.CultureInfo.InvariantCulture) ?? "Belirtilmemiş"}</strong>
                                     </td>
                                 </tr>
                                 <tr>
