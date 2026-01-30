@@ -34,7 +34,12 @@ export const AuthProvider = ({ children }) => {
                     email,
                 })
             } else {
-                setUserProfile(null)
+                // Profili olmayan normal kullanıcı: varsayılan profil oluştur, rol atanmamış
+                setUserProfile({
+                    fullName: email.split('@')[0] || 'Kullanıcı',
+                    roleName: null, // Rol atanmadı - navbar'da "Kullanıcı" gösterilecek
+                    email,
+                })
             }
             return
         }

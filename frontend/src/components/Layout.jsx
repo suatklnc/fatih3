@@ -13,6 +13,7 @@ function Layout({ children }) {
   const { user: authUser, logout } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [currentUser, setCurrentUser] = useState(null)
+  const [showProfilePopup, setShowProfilePopup] = useState(false)
 
   useEffect(() => {
     const loadCurrentUser = async () => {
@@ -42,9 +43,16 @@ function Layout({ children }) {
             })
             return
           }
+          // Profili olmayan normal kullanıcı: auth bilgilerinden varsayılan profil oluştur
+          const displayName = authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'Kullanıcı'
+          setCurrentUser({
+            email: authUser.email,
+            fullName: displayName,
+            roleName: null, // Rol atanmadı, "Kullanıcı" olarak gösterilecek
+          })
+          return
         }
-        if (userList.length > 0) setCurrentUser(userList[0])
-        else setCurrentUser(null)
+        setCurrentUser(null)
       } catch (error) {
         if (authUser?.email && SUPER_ADMIN_EMAILS.includes(authUser.email.toLowerCase())) {
           setCurrentUser({
@@ -91,36 +99,159 @@ function Layout({ children }) {
         </div>
         <div className="navbar-user">
           {currentUser ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontWeight: 'bold' }}>{currentUser.fullName || 'Kullanıcı'}</div>
-                <div style={{ fontSize: '12px', opacity: 0.8 }}>{currentUser.roleName || 'Kullanıcı'}</div>
+            <div style={{ position: 'relative' }}>
+              <div 
+                onClick={() => setShowProfilePopup(!showProfilePopup)}
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '10px',
+                  cursor: 'pointer',
+                  padding: '5px 10px',
+                  borderRadius: '8px',
+                  transition: 'background 0.2s'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+              >
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontWeight: 'bold' }}>{currentUser.fullName || 'Kullanıcı'}</div>
+                  <div style={{ fontSize: '12px', opacity: 0.8 }}>{currentUser.roleName || 'Kullanıcı'}</div>
+                </div>
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  background: '#4a90d9',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontWeight: 'bold'
+                }}>
+                  {currentUser.fullName?.split(' ').map(n => n.charAt(0)).join('').slice(0, 2) || '?'}
+                </div>
               </div>
-              <div style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '50%',
-                background: '#4a90d9',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                fontWeight: 'bold'
-              }}>
-                {currentUser.fullName?.split(' ').map(n => n.charAt(0)).join('').slice(0, 2) || '?'}
-              </div>
+
+              {/* Profil Popup */}
+              {showProfilePopup && (
+                <>
+                  <div 
+                    onClick={() => setShowProfilePopup(false)}
+                    style={{
+                      position: 'fixed',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      zIndex: 999
+                    }}
+                  />
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    right: 0,
+                    marginTop: '10px',
+                    background: 'white',
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                    padding: '20px',
+                    minWidth: '280px',
+                    zIndex: 1000,
+                    color: '#333'
+                  }}>
+                    <div style={{ textAlign: 'center', marginBottom: '15px' }}>
+                      <div style={{
+                        width: '60px',
+                        height: '60px',
+                        borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #4a90d9, #357abd)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                        fontWeight: 'bold',
+                        fontSize: '20px',
+                        margin: '0 auto 10px'
+                      }}>
+                        {currentUser.fullName?.split(' ').map(n => n.charAt(0)).join('').slice(0, 2) || '?'}
+                      </div>
+                      <div style={{ fontWeight: 'bold', fontSize: '16px' }}>{currentUser.fullName || 'Kullanıcı'}</div>
+                      <div style={{ 
+                        display: 'inline-block',
+                        background: currentUser.roleName === 'Patron' ? '#28a745' : 
+                                   currentUser.roleName === 'Yönetici' ? '#17a2b8' : '#6c757d',
+                        color: 'white',
+                        padding: '3px 10px',
+                        borderRadius: '12px',
+                        fontSize: '11px',
+                        marginTop: '5px'
+                      }}>
+                        {currentUser.roleName || 'Kullanıcı'}
+                      </div>
+                    </div>
+                    
+                    <div style={{ borderTop: '1px solid #eee', paddingTop: '15px' }}>
+                      <div style={{ marginBottom: '10px' }}>
+                        <div style={{ fontSize: '11px', color: '#888', marginBottom: '2px' }}>E-posta</div>
+                        <div style={{ fontSize: '13px' }}>{currentUser.email || authUser?.email || '-'}</div>
+                      </div>
+                      {currentUser.phone && (
+                        <div style={{ marginBottom: '10px' }}>
+                          <div style={{ fontSize: '11px', color: '#888', marginBottom: '2px' }}>Telefon</div>
+                          <div style={{ fontSize: '13px' }}>{currentUser.phone}</div>
+                        </div>
+                      )}
+                      {currentUser.companyName && (
+                        <div style={{ marginBottom: '10px' }}>
+                          <div style={{ fontSize: '11px', color: '#888', marginBottom: '2px' }}>Firma</div>
+                          <div style={{ fontSize: '13px' }}>{currentUser.companyName}</div>
+                        </div>
+                      )}
+                      <div>
+                        <div style={{ fontSize: '11px', color: '#888', marginBottom: '2px' }}>Durum</div>
+                        <div style={{ fontSize: '13px' }}>
+                          <span style={{
+                            display: 'inline-block',
+                            width: '8px',
+                            height: '8px',
+                            borderRadius: '50%',
+                            background: currentUser.isActive !== false ? '#28a745' : '#dc3545',
+                            marginRight: '6px'
+                          }}></span>
+                          {currentUser.isActive !== false ? 'Aktif' : 'Pasif'}
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        setShowProfilePopup(false)
+                        handleLogout()
+                      }}
+                      style={{
+                        width: '100%',
+                        marginTop: '15px',
+                        padding: '10px',
+                        background: '#dc3545',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                        fontWeight: '500'
+                      }}
+                    >
+                      Çıkış Yap
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           ) : (
             <span>Yükleniyor...</span>
           )}
           <div className="notifications">🔔</div>
-          <button
-            onClick={handleLogout}
-            className="btn btn-danger"
-            style={{ marginLeft: '10px', padding: '5px 10px', fontSize: '13px' }}
-          >
-            Çıkış
-          </button>
         </div>
       </nav>
 
