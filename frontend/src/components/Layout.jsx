@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import './Layout.css'
 
 // Veritabanında kayıt silinse bile tam yetkili sayılacak e-postalar (kod düzeyinde)
-const SUPER_ADMIN_EMAILS = ['suatkilinc0102@gmail.com']
+const SUPER_ADMIN_EMAILS = ['suatkilinc0102@gmail.com', 'ozbakanfatih@gmail.com']
 
 function Layout({ children }) {
   const location = useLocation()

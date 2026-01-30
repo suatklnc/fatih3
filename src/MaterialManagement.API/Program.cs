@@ -3,8 +3,8 @@ using MaterialManagement.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Coolify / PaaS: PORT env ile dinle (502 önlemi)
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+// Yerel: 5000 (Vite proxy). Coolify: PORT env (örn. 8080)
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 // Add services to the container.

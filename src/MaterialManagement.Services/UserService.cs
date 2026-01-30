@@ -61,7 +61,7 @@ public class UserService : IUserService
         }
     }
 
-    private static readonly string[] SuperAdminEmails = { "suatkilinc0102@gmail.com" };
+    private static readonly string[] SuperAdminEmails = { "suatkilinc0102@gmail.com", "ozbakanfatih@gmail.com" };
 
     public async Task<UserProfile?> GetUserByEmailAsync(string email)
     {
@@ -118,7 +118,7 @@ public class UserService : IUserService
             await EnsureRolesExistAsync();
             var roles = await GetAllRolesAsync();
             
-            if (user.Email == "suatkilinc0102@gmail.com")
+            if (SuperAdminEmails.Any(e => e.Equals(user.Email?.Trim(), StringComparison.OrdinalIgnoreCase)))
             {
                 var patronRole = roles.FirstOrDefault(r => r.Name == "Patron");
                 if (patronRole != null) user.RoleId = patronRole.Id;

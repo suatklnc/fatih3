@@ -7,7 +7,7 @@ const AuthContext = createContext({})
 export const useAuth = () => useContext(AuthContext)
 
 // Tam yetkili kullanıcılar: veritabanında kayıt olmasa bile bu rollerle işlem yapabilsin (onay, satın alma, tedarikçi)
-const SUPER_ADMIN_EMAILS = ['suatkilinc0102@gmail.com']
+const SUPER_ADMIN_EMAILS = ['suatkilinc0102@gmail.com', 'ozbakanfatih@gmail.com']
 
 export const AuthProvider = ({ children }) => {
     const [session, setSession] = useState(null)
@@ -16,17 +16,7 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true)
 
     const fetchUserProfile = async (userId, email) => {
-        try {
-            const res = await usersApi.getById(userId)
-            if (res.data) {
-                setUserProfile(res.data)
-                return
-            }
-        } catch (error) {
-            if (error.response?.status !== 404) {
-                console.error('Error fetching user profile:', error)
-            }
-        }
+        // Prefer lookup by email: user_profiles.id is our own Guid, not Supabase auth id, so getById(authId) often 404s
         if (email) {
             try {
                 const byEmail = await usersApi.getByEmail(email)
@@ -46,7 +36,19 @@ export const AuthProvider = ({ children }) => {
             } else {
                 setUserProfile(null)
             }
-        } else {
+            return
+        }
+        try {
+            const res = await usersApi.getById(userId)
+            if (res.data) {
+                setUserProfile(res.data)
+            } else {
+                setUserProfile(null)
+            }
+        } catch (error) {
+            if (error.response?.status !== 404) {
+                console.error('Error fetching user profile:', error)
+            }
             setUserProfile(null)
         }
     }

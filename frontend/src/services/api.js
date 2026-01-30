@@ -19,7 +19,10 @@ export const materialsApi = {
   importFromExcel: (file) => {
     const formData = new FormData()
     formData.append('file', file)
-    return api.post('/materials/import', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+    // Omit Content-Type so axios/browser sends multipart/form-data with boundary (default api uses application/json)
+    return api.post('/materials/import', formData, {
+      headers: { 'Content-Type': false }
+    })
   },
 }
 

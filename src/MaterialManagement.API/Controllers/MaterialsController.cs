@@ -79,8 +79,9 @@ public class MaterialsController : ControllerBase
     }
 
     [HttpPost("import")]
-    [RequestSizeLimit(5_242_880)]
-    public async Task<ActionResult<object>> ImportFromExcel(IFormFile file)
+    [RequestSizeLimit(10_485_760)]
+    [Consumes("multipart/form-data")]
+    public async Task<ActionResult<object>> ImportFromExcel([FromForm(Name = "file")] IFormFile? file)
     {
         if (file == null || file.Length == 0)
             return BadRequest(new { message = "Excel dosyası seçiniz." });
