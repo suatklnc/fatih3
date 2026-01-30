@@ -121,8 +121,16 @@ export const AuthProvider = ({ children }) => {
     }
 
     const logout = async () => {
-        const { error } = await supabase.auth.signOut()
-        if (error) throw error
+        try {
+            // scope: 'local' ile sadece bu cihazdan çıkış yap (403 hatasını önler)
+            await supabase.auth.signOut({ scope: 'local' })
+        } catch (error) {
+            // Session zaten yoksa veya başka hata olursa yine de çıkış yap
+            console.log('Logout warning (ignored):', error.message)
+        }
+        // Her durumda local state'i temizle
+        setSession(null)
+        setUser(null)
         setUserProfile(null)
     }
 

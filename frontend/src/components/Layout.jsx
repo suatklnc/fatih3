@@ -71,10 +71,11 @@ function Layout({ children }) {
   const handleLogout = async () => {
     try {
       await logout()
-      navigate('/login')
     } catch (error) {
-      console.error('Logout error:', error)
+      console.log('Logout warning:', error.message)
     }
+    // Her durumda login sayfasına yönlendir
+    navigate('/login')
   }
 
   const menuItems = [
@@ -225,9 +226,12 @@ function Layout({ children }) {
                     </div>
 
                     <button
-                      onClick={() => {
+                      type="button"
+                      onClick={async (e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
                         setShowProfilePopup(false)
-                        handleLogout()
+                        await handleLogout()
                       }}
                       style={{
                         width: '100%',
