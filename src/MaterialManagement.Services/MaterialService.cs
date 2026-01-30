@@ -190,39 +190,23 @@ public class MaterialService : IMaterialService
     {
         try
         {
-            // Önce tüm malzemeleri çek
+            // Önce sayıyı al
             var allMaterials = await GetAllMaterialsAsync();
             var totalCount = allMaterials.Count;
             
             if (totalCount == 0)
                 return 0;
             
-            // Batch halinde sil (Supabase'de toplu silme için ID listesi kullan)
-            var batchSize = 100;
-            var deleted = 0;
+            _logger.LogInformation("{Count} malzeme toplu olarak siliniyor...", totalCount);
             
-            for (var i = 0; i < allMaterials.Count; i += batchSize)
-            {
-                var batch = allMaterials.Skip(i).Take(batchSize).ToList();
-                foreach (var material in batch)
-                {
-                    try
-                    {
-                        await _supabaseService.Client
-                            .From<Material>()
-                            .Filter("id", Supabase.Postgrest.Constants.Operator.Equals, material.Id.ToString())
-                            .Delete();
-                        deleted++;
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning(ex, "Malzeme silinemedi: {Id} - {Code}", material.Id, material.Code);
-                    }
-                }
-                _logger.LogInformation("Silme batch {BatchNum}: {Deleted}/{Total}", (i / batchSize) + 1, deleted, totalCount);
-            }
+            // Supabase'de tek seferde tümünü sil (id > '00000000-0000-0000-0000-000000000000' ile tüm kayıtları seç)
+            await _supabaseService.Client
+                .From<Material>()
+                .Filter("id", Supabase.Postgrest.Constants.Operator.GreaterThan, "00000000-0000-0000-0000-000000000000")
+                .Delete();
             
-            return deleted;
+            _logger.LogInformation("{Count} malzeme başarıyla silindi", totalCount);
+            return totalCount;
         }
         catch (Exception ex)
         {
