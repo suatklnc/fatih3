@@ -47,6 +47,41 @@ public class UsersController : ControllerBase
         }
     }
 
+    [HttpGet("by-email")]
+    public async Task<ActionResult<object>> GetByEmail([FromQuery(Name = "email")] string? emailParam)
+    {
+        var email = !string.IsNullOrWhiteSpace(emailParam)
+            ? emailParam
+            : (Request.Query["email"].ToString() ?? Request.Query["Email"].ToString());
+        if (string.IsNullOrWhiteSpace(email))
+            return BadRequest(new { message = "email gerekli" });
+        try
+        {
+            var user = await _userService.GetUserByEmailAsync(email.Trim());
+            if (user == null)
+                return NotFound();
+            var roles = await _userService.GetAllRolesAsync();
+            return Ok(new
+            {
+                user.Id,
+                user.Email,
+                user.FullName,
+                user.RoleId,
+                RoleName = roles.FirstOrDefault(r => r.Id == user.RoleId)?.Name,
+                user.CompanyId,
+                user.Phone,
+                user.IsActive,
+                user.CreatedAt,
+                user.UpdatedAt
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting user by email: {Email}", email);
+            return StatusCode(500, new { message = ex.Message });
+        }
+    }
+
     [HttpGet("{id}")]
     public async Task<ActionResult<object>> GetById(Guid id)
     {

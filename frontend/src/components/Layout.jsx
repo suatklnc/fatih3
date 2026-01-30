@@ -4,6 +4,9 @@ import { usersApi } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import './Layout.css'
 
+// Veritabanında kayıt silinse bile tam yetkili sayılacak e-postalar (kod düzeyinde)
+const SUPER_ADMIN_EMAILS = ['suatkilinc0102@gmail.com']
+
 function Layout({ children }) {
   const location = useLocation()
   const navigate = useNavigate()
@@ -15,17 +18,43 @@ function Layout({ children }) {
     const loadCurrentUser = async () => {
       try {
         const res = await usersApi.getAll()
-        if (res.data) {
-          if (authUser?.email) {
-            const matched = res.data.find(u => u.email === authUser.email)
-            if (matched) setCurrentUser(matched)
-            else if (res.data.length > 0) setCurrentUser(res.data[0])
-          } else if (res.data.length > 0) {
-            setCurrentUser(res.data[0])
+        const userList = res.data || []
+        if (authUser?.email) {
+          let matched = userList.find(u => u.email === authUser.email)
+          if (matched) {
+            setCurrentUser(matched)
+            return
+          }
+          if (SUPER_ADMIN_EMAILS.includes(authUser.email.toLowerCase())) {
+            try {
+              const byEmail = await usersApi.getByEmail(authUser.email)
+              if (byEmail.data) {
+                setCurrentUser(byEmail.data)
+                return
+              }
+            } catch (_) {
+              // Profil yok, aşağıdaki yedek kullanılacak
+            }
+            setCurrentUser({
+              email: authUser.email,
+              fullName: 'Tam Yetkili Kullanıcı',
+              roleName: 'Patron',
+            })
+            return
           }
         }
+        if (userList.length > 0) setCurrentUser(userList[0])
+        else setCurrentUser(null)
       } catch (error) {
-        console.error('Error loading user:', error)
+        if (authUser?.email && SUPER_ADMIN_EMAILS.includes(authUser.email.toLowerCase())) {
+          setCurrentUser({
+            email: authUser.email,
+            fullName: 'Tam Yetkili Kullanıcı',
+            roleName: 'Patron',
+          })
+        } else {
+          console.error('Error loading user:', error)
+        }
       }
     }
     loadCurrentUser()
@@ -65,7 +94,7 @@ function Layout({ children }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontWeight: 'bold' }}>{currentUser.fullName || 'Kullanıcı'}</div>
-                <div style={{ fontSize: '12px', opacity: 0.8 }}>{currentUser.roleName || 'Yetkili'}</div>
+                <div style={{ fontSize: '12px', opacity: 0.8 }}>{currentUser.roleName || 'Kullanıcı'}</div>
               </div>
               <div style={{
                 width: '40px',

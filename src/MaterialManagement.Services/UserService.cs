@@ -7,6 +7,7 @@ public interface IUserService
 {
     Task<List<UserProfile>> GetAllUsersAsync();
     Task<UserProfile?> GetUserByIdAsync(Guid id);
+    Task<UserProfile?> GetUserByEmailAsync(string email);
     Task<UserProfile> CreateUserAsync(UserProfile user);
     Task<UserProfile> UpdateUserAsync(Guid id, UserProfile user);
     Task<bool> DeleteUserAsync(Guid id);
@@ -60,6 +61,50 @@ public class UserService : IUserService
         }
     }
 
+    private static readonly string[] SuperAdminEmails = { "suatkilinc0102@gmail.com" };
+
+    public async Task<UserProfile?> GetUserByEmailAsync(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email)) return null;
+        try
+        {
+            var response = await _supabaseService.Client
+                .From<UserProfile>()
+                .Filter("email", Supabase.Postgrest.Constants.Operator.Equals, email.Trim())
+                .Get();
+            var existing = response.Models.FirstOrDefault();
+            if (existing != null) return existing;
+
+            var emailLower = email.Trim().ToLowerInvariant();
+            if (!SuperAdminEmails.Any(e => e.Equals(emailLower, StringComparison.OrdinalIgnoreCase)))
+                return null;
+
+            await EnsureRolesExistAsync();
+            var roles = await GetAllRolesAsync();
+            var patronRole = roles.FirstOrDefault(r => r.Name == "Patron");
+            if (patronRole == null) return null;
+
+            var newProfile = new UserProfile
+            {
+                Id = Guid.NewGuid(),
+                Email = email.Trim(),
+                FullName = "Tam Yetkili Kullanıcı",
+                RoleId = patronRole.Id,
+                CompanyId = null,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            var insert = await _supabaseService.Client.From<UserProfile>().Insert(newProfile);
+            return insert.Models.First();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting/creating user by email: {Email}", email);
+            return null;
+        }
+    }
+
     public async Task<UserProfile> CreateUserAsync(UserProfile user)
     {
         try
@@ -80,8 +125,8 @@ public class UserService : IUserService
             }
             else
             {
-                // Varsayılan rol: Personel (Sadece talep oluşturabilir)
-                if (user.RoleId == Guid.Empty)
+                // Yeni kayıt / rol atanmamış: Personel (sıradan kullanıcı)
+                if (!user.RoleId.HasValue || user.RoleId == Guid.Empty)
                 {
                     var personelRole = roles.FirstOrDefault(r => r.Name == "Personel");
                     if (personelRole != null) user.RoleId = personelRole.Id;

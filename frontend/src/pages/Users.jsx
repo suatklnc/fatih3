@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react'
+import { useSearchParams, Link } from 'react-router-dom'
 import { usersApi, companiesApi } from '../services/api'
 import './Materials.css'
 
 function Users() {
+    const [searchParams] = useSearchParams()
+    const companyIdFromUrl = searchParams.get('companyId')
     const [users, setUsers] = useState([])
     const [roles, setRoles] = useState([])
     const [companies, setCompanies] = useState([])
@@ -109,6 +112,11 @@ function Users() {
         return company?.name || '-'
     }
 
+    const filteredUsers = companyIdFromUrl
+        ? users.filter(u => u.companyId === companyIdFromUrl)
+        : users
+    const filterCompanyName = companyIdFromUrl ? getCompanyName(companyIdFromUrl) : null
+
     if (loading) {
         return <div className="loading">Yükleniyor...</div>
     }
@@ -121,6 +129,14 @@ function Users() {
                     {showForm ? 'İptal' : '+ Yeni Kullanıcı'}
                 </button>
             </div>
+
+            {filterCompanyName && (
+                <div className="card" style={{ marginBottom: '16px', background: '#fff8e6', border: '1px solid #e6d9b8' }}>
+                    <strong>Firma filtresi:</strong> "{filterCompanyName}" firmasına bağlı kullanıcılar listeleniyor.
+                    Firma silmek için bu kullanıcıları başka firmaya atayın (Düzenle) veya silin.
+                    <Link to="/users" style={{ marginLeft: '12px', fontSize: '14px' }}>Filtreyi kaldır</Link>
+                </div>
+            )}
 
             {showForm && (
                 <div className="card">
@@ -222,14 +238,14 @@ function Users() {
                         </tr>
                     </thead>
                     <tbody>
-                        {users.length === 0 ? (
+                        {filteredUsers.length === 0 ? (
                             <tr>
                                 <td colSpan="6" style={{ textAlign: 'center', padding: '20px' }}>
-                                    Henüz kullanıcı eklenmemiş
+                                    {companyIdFromUrl ? 'Bu firmaya bağlı kullanıcı yok.' : 'Henüz kullanıcı eklenmemiş'}
                                 </td>
                             </tr>
                         ) : (
-                            users.map((user) => (
+                            filteredUsers.map((user) => (
                                 <tr key={user.id}>
                                     <td>{user.fullName || '-'}</td>
                                     <td>{user.email}</td>

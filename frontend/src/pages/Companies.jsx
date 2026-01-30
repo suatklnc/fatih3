@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react'
-import { companiesApi } from '../services/api'
+import { useNavigate } from 'react-router-dom'
+import { companiesApi, usersApi } from '../services/api'
 import './Materials.css'
 
 function Companies() {
+    const navigate = useNavigate()
     const [companies, setCompanies] = useState([])
+    const [users, setUsers] = useState([])
     const [loading, setLoading] = useState(true)
     const [showForm, setShowForm] = useState(false)
     const [editingCompany, setEditingCompany] = useState(null)
@@ -21,13 +24,21 @@ function Companies() {
 
     const loadCompanies = async () => {
         try {
-            const response = await companiesApi.getAll()
-            setCompanies(response.data || [])
+            const [companiesRes, usersRes] = await Promise.all([
+                companiesApi.getAll(),
+                usersApi.getAll()
+            ])
+            setCompanies(companiesRes.data || [])
+            setUsers(usersRes.data || [])
         } catch (error) {
             console.error('Error loading companies:', error)
         } finally {
             setLoading(false)
         }
+    }
+
+    const getUserCountByCompany = (companyId) => {
+        return users.filter(u => u.companyId === companyId).length
     }
 
     const resetForm = () => {
@@ -70,7 +81,20 @@ function Companies() {
         setShowForm(true)
     }
 
-    const handleDelete = async (id) => {
+    const handleDelete = async (company) => {
+        const id = company.id
+        const userCount = getUserCountByCompany(id)
+
+        if (userCount > 0) {
+            const goToUsers = window.confirm(
+                `Bu firmaya ${userCount} kullanıcı bağlı. Firma silmek için önce bu kullanıcıları Kullanıcılar sayfasından başka firmaya atayın veya silin.\n\nKullanıcılar sayfasına gideyim mi?`
+            )
+            if (goToUsers) {
+                navigate(`/users?companyId=${id}`)
+            }
+            return
+        }
+
         if (!confirm('Bu firmayı silmek istediğinize emin misiniz?')) return
 
         try {
@@ -170,41 +194,54 @@ function Companies() {
                             <th>Vergi No</th>
                             <th>Telefon</th>
                             <th>E-posta</th>
+                            <th>Personel</th>
                             <th>İşlemler</th>
                         </tr>
                     </thead>
                     <tbody>
                         {companies.length === 0 ? (
                             <tr>
-                                <td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>
+                                <td colSpan="6" style={{ textAlign: 'center', padding: '20px' }}>
                                     Henüz firma eklenmemiş
                                 </td>
                             </tr>
                         ) : (
-                            companies.map((company) => (
-                                <tr key={company.id}>
-                                    <td>{company.name}</td>
-                                    <td>{company.taxNumber || '-'}</td>
-                                    <td>{company.phone || '-'}</td>
-                                    <td>{company.email || '-'}</td>
-                                    <td>
-                                        <button
-                                            className="btn"
-                                            onClick={() => handleEdit(company)}
-                                            style={{ fontSize: '12px', padding: '5px 10px', marginRight: '5px' }}
-                                        >
-                                            Düzenle
-                                        </button>
-                                        <button
-                                            className="btn btn-danger"
-                                            onClick={() => handleDelete(company.id)}
-                                            style={{ fontSize: '12px', padding: '5px 10px' }}
-                                        >
-                                            Sil
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))
+                            companies.map((company) => {
+                                const count = getUserCountByCompany(company.id)
+                                return (
+                                    <tr key={company.id}>
+                                        <td>{company.name}</td>
+                                        <td>{company.taxNumber || '-'}</td>
+                                        <td>{company.phone || '-'}</td>
+                                        <td>{company.email || '-'}</td>
+                                        <td>
+                                            {count > 0 ? (
+                                                <span title="Bu firmaya bağlı kullanıcı sayısı">{count} kişi</span>
+                                            ) : (
+                                                '-'
+                                            )}
+                                        </td>
+                                        <td>
+                                            <button
+                                                type="button"
+                                                className="btn"
+                                                onClick={() => handleEdit(company)}
+                                                style={{ fontSize: '12px', padding: '5px 10px', marginRight: '5px' }}
+                                            >
+                                                Düzenle
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="btn btn-danger"
+                                                onClick={() => handleDelete(company)}
+                                                style={{ fontSize: '12px', padding: '5px 10px' }}
+                                            >
+                                                Sil
+                                            </button>
+                                        </td>
+                                    </tr>
+                                )
+                            })
                         )}
                     </tbody>
                 </table>

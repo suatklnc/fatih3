@@ -78,6 +78,7 @@ export const projectsApi = {
 export const usersApi = {
   getAll: () => api.get('/users'),
   getById: (id) => api.get(`/users/${id}`),
+  getByEmail: (email) => api.get(`/users/by-email?email=${encodeURIComponent(email || '')}`),
   create: (data) => api.post('/users', data),
   update: (id, data) => api.put(`/users/${id}`, data),
   delete: (id) => api.delete(`/users/${id}`),

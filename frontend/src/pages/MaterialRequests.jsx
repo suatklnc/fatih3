@@ -9,6 +9,7 @@ function MaterialRequests() {
 
   const isPatronOrAdmin = userRole === 'patron' || userRole === 'yönetici'
   const isPurchasing = userRole === 'satın alma' || userRole === 'satın alma birimi' || isPatronOrAdmin
+  const isPurchasingOnly = isPurchasing && !isPatronOrAdmin
 
   const [requests, setRequests] = useState([])
   const [materials, setMaterials] = useState([])
@@ -23,6 +24,10 @@ function MaterialRequests() {
   const [showSupplierModal, setShowSupplierModal] = useState(false)
   const [selectedSupplierIds, setSelectedSupplierIds] = useState([])
   const [supplierModalLoading, setSupplierModalLoading] = useState(false)
+
+  const displayRequests = isPurchasingOnly
+    ? requests.filter(r => r.status !== 'pending' && r.status !== 'rejected')
+    : requests
 
   const [formData, setFormData] = useState({
     projectId: '',
@@ -477,14 +482,14 @@ function MaterialRequests() {
             </tr>
           </thead>
           <tbody>
-            {requests.length === 0 ? (
+            {displayRequests.length === 0 ? (
               <tr>
                 <td colSpan="6" style={{ textAlign: 'center', padding: '20px' }}>
-                  Henüz talep oluşturulmamış
+                  {isPurchasingOnly ? 'Onaylanmış talep bulunmuyor.' : 'Henüz talep oluşturulmamış'}
                 </td>
               </tr>
             ) : (
-              requests.map((request) => (
+              displayRequests.map((request) => (
                 <tr key={request.id} style={{ cursor: 'pointer' }} onClick={() => handleViewDetail(request)}>
                   <td>{request.requestNumber}</td>
                   <td>{getProjectName(request.projectId)}</td>
@@ -523,7 +528,7 @@ function MaterialRequests() {
                         Satın Almaya Gönder
                       </button>
                     )}
-                    {request.status === 'sent_to_purchasing' && isPurchasing && (
+                    {(request.status === 'approved' || request.status === 'sent_to_purchasing') && isPurchasing && (
                       <button
                         className="btn btn-info"
                         onClick={() => handleSendToSuppliers(request.id)}

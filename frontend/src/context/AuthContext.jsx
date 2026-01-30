@@ -6,26 +6,48 @@ const AuthContext = createContext({})
 
 export const useAuth = () => useContext(AuthContext)
 
+// Tam yetkili kullanıcılar: veritabanında kayıt olmasa bile bu rollerle işlem yapabilsin (onay, satın alma, tedarikçi)
+const SUPER_ADMIN_EMAILS = ['suatkilinc0102@gmail.com']
+
 export const AuthProvider = ({ children }) => {
     const [session, setSession] = useState(null)
     const [user, setUser] = useState(null)
     const [userProfile, setUserProfile] = useState(null)
     const [loading, setLoading] = useState(true)
 
-    const fetchUserProfile = async (userId) => {
+    const fetchUserProfile = async (userId, email) => {
         try {
             const res = await usersApi.getById(userId)
             if (res.data) {
                 setUserProfile(res.data)
+                return
             }
         } catch (error) {
-            // 404 hatası: kullanıcı profili henüz oluşturulmamış olabilir
-            if (error.response?.status === 404) {
-                console.log('User profile not found in database, user may need to complete registration')
-                setUserProfile(null)
-            } else {
+            if (error.response?.status !== 404) {
                 console.error('Error fetching user profile:', error)
             }
+        }
+        if (email) {
+            try {
+                const byEmail = await usersApi.getByEmail(email)
+                if (byEmail.data) {
+                    setUserProfile(byEmail.data)
+                    return
+                }
+            } catch (_) {
+                // Profil yok veya API hatası
+            }
+            if (SUPER_ADMIN_EMAILS.includes(email.toLowerCase())) {
+                setUserProfile({
+                    fullName: 'Tam Yetkili Kullanıcı',
+                    roleName: 'Patron',
+                    email,
+                })
+            } else {
+                setUserProfile(null)
+            }
+        } else {
+            setUserProfile(null)
         }
     }
 
@@ -38,7 +60,7 @@ export const AuthProvider = ({ children }) => {
                 setSession(session)
                 setUser(session?.user ?? null)
                 if (session?.user) {
-                    await fetchUserProfile(session.user.id)
+                    await fetchUserProfile(session.user.id, session.user.email)
                 }
             } catch (error) {
                 console.error('Auth initialization error:', error)
@@ -53,7 +75,7 @@ export const AuthProvider = ({ children }) => {
             setSession(session)
             setUser(session?.user ?? null)
             if (session?.user) {
-                await fetchUserProfile(session.user.id)
+                await fetchUserProfile(session.user.id, session.user.email)
             } else {
                 setUserProfile(null)
             }
