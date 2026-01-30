@@ -2,6 +2,12 @@
 FROM node:20-alpine AS frontend-build
 WORKDIR /app/frontend
 
+# Coolify'da Build Arguments olarak VITE_SUPABASE_URL ve VITE_SUPABASE_KEY verin
+ARG VITE_SUPABASE_URL
+ARG VITE_SUPABASE_KEY
+ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL
+ENV VITE_SUPABASE_KEY=$VITE_SUPABASE_KEY
+
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
 COPY frontend/ ./

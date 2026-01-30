@@ -15,9 +15,20 @@ Coolify panelinde **Environment Variables** bölümüne ekleyin:
 
 | Değişken        | Zorunlu | Açıklama |
 |-----------------|--------|----------|
-| `SUPABASE_URL`  | Evet   | Supabase proje URL’i (örn. `https://xxx.supabase.co`) |
-| `SUPABASE_KEY`  | Evet   | Supabase anon/public API key |
+| `SUPABASE_URL`  | Evet   | Supabase proje URL’i (backend için) |
+| `SUPABASE_KEY`  | Evet   | Supabase anon/public API key (backend için) |
 | `ASPNETCORE_ENVIRONMENT` | Hayır | `Production` (varsayılan) |
+
+## Build Arguments (Zorunlu – "supabaseKey is required" hatasını önler)
+
+Frontend build sırasında Supabase bilgisi gömülür. Coolify’da **Build Arguments** (Build Time Variables) bölümüne mutlaka ekleyin:
+
+| Argument | Değer |
+|----------|--------|
+| `VITE_SUPABASE_URL` | Supabase proje URL’i (örn. `https://xxx.supabase.co`) |
+| `VITE_SUPABASE_KEY` | Supabase anon/public API key |
+
+Bu ikisi **olmadan** sitede "supabaseKey is required" hatası alırsınız. Her deploy’da bu değerler build’e geçer.
 
 **SMTP (e-posta)** kullanacaksanız `appsettings.json`’daki değerleri ortam değişkeni ile override etmek için backend’e ek kod gerekir; şimdilik appsettings’te kalabilir veya ileride eklenebilir.
 
@@ -31,14 +42,7 @@ docker run -p 8080:8080 -e SUPABASE_URL="https://xxx.supabase.co" -e SUPABASE_KE
 
 Tarayıcıda: http://localhost:8080
 
-## İsteğe Bağlı: Frontend Supabase (Build Args)
-
-Farklı bir Supabase projesi kullanacaksanız, **Build Arguments** olarak ekleyin:
-
-- `VITE_SUPABASE_URL` – Supabase proje URL’i  
-- `VITE_SUPABASE_KEY` – Supabase anon key  
-
-(Bunlar build sırasında frontend’e gömülür. Belirtmezseniz kod içindeki varsayılan değerler kullanılır.)
+(Bkz. yukarıdaki **Build Arguments** bölümü – bunlar zorunludur.)
 
 ## Notlar
 
