@@ -1,7 +1,10 @@
 using Supabase;
 using MaterialManagement.Services;
+using MaterialManagement.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddHttpClient();
 
 // Yerel: 5000 (Vite proxy). Coolify: PORT env (örn. 8080)
 var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
@@ -62,6 +65,7 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<SupabaseAuthAdminService>();
 builder.Services.AddScoped<ISupplierService, SupplierService>();
 builder.Services.AddScoped<IMaterialImportService, MaterialImportService>();
 

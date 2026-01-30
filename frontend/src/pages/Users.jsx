@@ -27,14 +27,17 @@ function Users() {
 
     const loadData = async () => {
         try {
+            const fetchUsers = typeof usersApi.getAllWithAuth === 'function'
+                ? usersApi.getAllWithAuth()
+                : usersApi.getAll()
             const [usersRes, rolesRes, companiesRes] = await Promise.all([
-                usersApi.getAll(),
+                fetchUsers,
                 usersApi.getRoles(),
                 companiesApi.getAll()
             ])
-            setUsers(usersRes.data || [])
-            setRoles(rolesRes.data || [])
-            setCompanies(companiesRes.data || [])
+            setUsers(usersRes?.data ?? [])
+            setRoles(rolesRes?.data ?? [])
+            setCompanies(companiesRes?.data ?? [])
         } catch (error) {
             console.error('Error loading data:', error)
         } finally {
@@ -128,6 +131,10 @@ function Users() {
                 <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
                     {showForm ? 'İptal' : '+ Yeni Kullanıcı'}
                 </button>
+            </div>
+
+            <div className="card" style={{ marginBottom: '16px', padding: '12px 16px', background: '#f0f7ff', border: '1px solid #cce5ff', fontSize: '14px' }}>
+                Giriş yapmış veya kayıt olmuş tüm hesaplar burada listelenir. <strong>Yetki atanmamış</strong> hesaplara &quot;Yetki Ver&quot; ile rol ve firma atayabilir; yetkili kullanıcıları düzenleyebilir veya silebilirsiniz.
             </div>
 
             {filterCompanyName && (
@@ -246,31 +253,61 @@ function Users() {
                             </tr>
                         ) : (
                             filteredUsers.map((user) => (
-                                <tr key={user.id}>
+                                <tr key={user.id || user.authUserId || user.email} style={user.hasProfile === false ? { background: '#f9f9f9' } : undefined}>
                                     <td>{user.fullName || '-'}</td>
                                     <td>{user.email}</td>
-                                    <td>{getRoleName(user.roleId)}</td>
+                                    <td>{user.hasProfile === false ? '—' : getRoleName(user.roleId)}</td>
                                     <td>{getCompanyName(user.companyId)}</td>
                                     <td>
-                                        <span className={`status-badge ${user.isActive ? 'status-active' : 'status-cancelled'}`}>
-                                            {user.isActive ? 'Aktif' : 'Pasif'}
-                                        </span>
+                                        {user.hasProfile === false ? (
+                                            <span style={{ color: '#888', fontSize: '13px' }}>Yetki atanmamış</span>
+                                        ) : (
+                                            <span className={`status-badge ${user.isActive ? 'status-active' : 'status-cancelled'}`}>
+                                                {user.isActive ? 'Aktif' : 'Pasif'}
+                                            </span>
+                                        )}
                                     </td>
                                     <td>
-                                        <button
-                                            className="btn"
-                                            onClick={() => handleEdit(user)}
-                                            style={{ fontSize: '12px', padding: '5px 10px', marginRight: '5px' }}
-                                        >
-                                            Düzenle
-                                        </button>
-                                        <button
-                                            className="btn btn-danger"
-                                            onClick={() => handleDelete(user.id)}
-                                            style={{ fontSize: '12px', padding: '5px 10px' }}
-                                        >
-                                            Sil
-                                        </button>
+                                        {user.hasProfile === false ? (
+                                            <button
+                                                type="button"
+                                                className="btn btn-primary"
+                                                onClick={() => {
+                                                    setFormData({
+                                                        email: user.email,
+                                                        fullName: user.fullName || user.email,
+                                                        roleId: '',
+                                                        companyId: '',
+                                                        phone: '',
+                                                        isActive: true,
+                                                    })
+                                                    setEditingUser(null)
+                                                    setShowForm(true)
+                                                }}
+                                                style={{ fontSize: '12px', padding: '5px 10px' }}
+                                            >
+                                                Yetki Ver
+                                            </button>
+                                        ) : (
+                                            <>
+                                                <button
+                                                    type="button"
+                                                    className="btn"
+                                                    onClick={() => handleEdit(user)}
+                                                    style={{ fontSize: '12px', padding: '5px 10px', marginRight: '5px' }}
+                                                >
+                                                    Düzenle
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-danger"
+                                                    onClick={() => handleDelete(user.id)}
+                                                    style={{ fontSize: '12px', padding: '5px 10px' }}
+                                                >
+                                                    Sil
+                                                </button>
+                                            </>
+                                        )}
                                     </td>
                                 </tr>
                             ))

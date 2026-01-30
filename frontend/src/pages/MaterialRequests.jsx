@@ -3,12 +3,28 @@ import { materialRequestsApi, materialsApi, projectsApi, suppliersApi } from '..
 import { useAuth } from '../context/AuthContext'
 import './MaterialRequests.css'
 
+// Rol adını karşılaştırma için normalleştir (Türkçe ı/i farkları)
+function normalizeRole(roleName) {
+  if (!roleName || typeof roleName !== 'string') return ''
+  return roleName.toLowerCase().replace(/ı/g, 'i').replace(/İ/g, 'i').trim()
+}
+
 function MaterialRequests() {
   const { userProfile } = useAuth()
-  const userRole = userProfile?.roleName?.toLowerCase() || ''
+  const rawRole = userProfile?.roleName || ''
+  const userRole = rawRole.toLowerCase().trim()
+  const roleNorm = normalizeRole(rawRole)
 
-  const isPatronOrAdmin = userRole === 'patron' || userRole === 'yönetici'
-  const isPurchasing = userRole === 'satın alma' || userRole === 'satın alma birimi' || isPatronOrAdmin
+  // Tam yetkili / yönetici: onaylar ve satın almaya gönderir. Satın alma: onaylanmış talepleri tedarikçilere gönderir.
+  const isPatronOrAdmin = roleNorm === 'patron' || roleNorm === 'yönetici' || userRole === 'patron' || userRole === 'yönetici'
+  const isPurchasing =
+    isPatronOrAdmin ||
+    roleNorm === 'satın alma' ||
+    roleNorm === 'satın alma birimi' ||
+    roleNorm.includes('satın alma') ||
+    roleNorm.includes('satin alma') ||
+    userRole.includes('satın alma') ||
+    userRole.includes('alma birimi')
   const isPurchasingOnly = isPurchasing && !isPatronOrAdmin
 
   const [requests, setRequests] = useState([])
@@ -514,6 +530,16 @@ function MaterialRequests() {
       )}
 
       <div className="card">
+        {isPurchasing && (
+          <div style={{ padding: '12px 16px', background: '#e8f4fd', borderBottom: '1px solid #cce5ff', fontSize: '14px', color: '#004085' }}>
+            <strong>Satın alma yetkisi:</strong> Rolünüz &quot;{rawRole || '—'}&quot; olarak algılandı. Durumu <strong>Onaylandı</strong> veya <strong>Satın Almaya Gönderildi</strong> olan taleplerde &quot;Tedarikçilere Gönder&quot; butonu görünür.
+            {displayRequests.filter(r => r.status === 'approved' || r.status === 'sent_to_purchasing').length === 0 && displayRequests.length > 0 && (
+              <span style={{ display: 'block', marginTop: '6px' }}>
+                Şu an listede tedarikçiye gönderebileceğiniz talep yok (önce tam yetkili/yönetici talebi onaylayıp &quot;Satın Almaya Gönder&quot; demeli).
+              </span>
+            )}
+          </div>
+        )}
         <table>
           <thead>
             <tr>

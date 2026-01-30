@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MaterialManagement.Models;
 using MaterialManagement.Services;
+using MaterialManagement.API.Services;
 
 namespace MaterialManagement.API.Controllers;
 
@@ -9,12 +10,114 @@ namespace MaterialManagement.API.Controllers;
 public class UsersController : ControllerBase
 {
     private readonly IUserService _userService;
+    private readonly SupabaseAuthAdminService _authAdminService;
     private readonly ILogger<UsersController> _logger;
 
-    public UsersController(IUserService userService, ILogger<UsersController> logger)
+    public UsersController(IUserService userService, SupabaseAuthAdminService authAdminService, ILogger<UsersController> logger)
     {
         _userService = userService;
+        _authAdminService = authAdminService;
         _logger = logger;
+    }
+
+    /// <summary>
+    /// Tüm kullanıcıları getirir: user_profiles + Supabase Auth'ta giriş/kayıt olmuş ama henüz yetkisi atanmamış hesaplar.
+    /// Tam yetkili kullanıcılar bu listeden yetki verebilir veya silebilir.
+    /// </summary>
+    [HttpGet("with-auth")]
+    public async Task<ActionResult<object>> GetAllWithAuth()
+    {
+        try
+        {
+            var profiles = await _userService.GetAllUsersAsync();
+            var roles = await _userService.GetAllRolesAsync();
+            var authUsers = await _authAdminService.ListAuthUsersAsync();
+            var profileByEmail = profiles
+                .Where(p => !string.IsNullOrWhiteSpace(p.Email))
+                .GroupBy(p => p.Email.Trim().ToLowerInvariant())
+                .ToDictionary(g => g.Key, g => g.First());
+
+            var result = new List<object>();
+            var addedEmails = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var auth in authUsers.OrderBy(a => a.Email, StringComparer.OrdinalIgnoreCase))
+            {
+                var emailKey = auth.Email.Trim().ToLowerInvariant();
+                if (addedEmails.Contains(emailKey)) continue;
+                addedEmails.Add(emailKey);
+
+                if (profileByEmail.TryGetValue(emailKey, out var profile))
+                {
+                    result.Add(new
+                    {
+                        profile.Id,
+                        AuthUserId = auth.AuthUserId,
+                        profile.Email,
+                        profile.FullName,
+                        profile.RoleId,
+                        RoleName = roles.FirstOrDefault(r => r.Id == profile.RoleId)?.Name,
+                        profile.CompanyId,
+                        profile.Phone,
+                        profile.IsActive,
+                        profile.CreatedAt,
+                        profile.UpdatedAt,
+                        HasProfile = true
+                    });
+                }
+                else
+                {
+                    result.Add(new
+                    {
+                        Id = (Guid?)null,
+                        AuthUserId = auth.AuthUserId,
+                        Email = auth.Email,
+                        FullName = auth.FullName ?? auth.Email,
+                        RoleId = (Guid?)null,
+                        RoleName = (string?)null,
+                        CompanyId = (Guid?)null,
+                        Phone = (string?)null,
+                        IsActive = true,
+                        CreatedAt = auth.CreatedAt,
+                        UpdatedAt = (DateTime?)null,
+                        HasProfile = false
+                    });
+                }
+            }
+
+            foreach (var profile in profiles.Where(p => !string.IsNullOrWhiteSpace(p.Email)))
+            {
+                var emailKey = profile.Email.Trim().ToLowerInvariant();
+                if (addedEmails.Contains(emailKey)) continue;
+                addedEmails.Add(emailKey);
+                result.Add(new
+                {
+                    profile.Id,
+                    AuthUserId = (string?)null,
+                    profile.Email,
+                    profile.FullName,
+                    profile.RoleId,
+                    RoleName = roles.FirstOrDefault(r => r.Id == profile.RoleId)?.Name,
+                    profile.CompanyId,
+                    profile.Phone,
+                    profile.IsActive,
+                    profile.CreatedAt,
+                    profile.UpdatedAt,
+                    HasProfile = true
+                });
+            }
+
+            result = result.OrderBy(x =>
+            {
+                var el = System.Text.Json.JsonSerializer.SerializeToElement(x);
+                return el.TryGetProperty("email", out var e) ? e.GetString() ?? "" : "";
+            }, StringComparer.OrdinalIgnoreCase).ToList();
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting users with auth");
+            return StatusCode(500, new { message = ex.Message });
+        }
     }
 
     [HttpGet]
@@ -82,7 +185,7 @@ public class UsersController : ControllerBase
         }
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id:guid}")]
     public async Task<ActionResult<object>> GetById(Guid id)
     {
         try
@@ -140,7 +243,7 @@ public class UsersController : ControllerBase
         }
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("{id:guid}")]
     public async Task<ActionResult<object>> Update(Guid id, [FromBody] UserProfile user)
     {
         try
@@ -166,7 +269,7 @@ public class UsersController : ControllerBase
         }
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
         try
