@@ -16,6 +16,11 @@ export const materialsApi = {
   create: (data) => api.post('/materials', data),
   update: (id, data) => api.put(`/materials/${id}`, data),
   delete: (id) => api.delete(`/materials/${id}`),
+  importFromExcel: (file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return api.post('/materials/import', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+  },
 }
 
 // Material Requests API

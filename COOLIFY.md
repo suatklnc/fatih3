@@ -17,6 +17,7 @@ Coolify panelinde **Environment Variables** bölümüne ekleyin:
 |-----------------|--------|----------|
 | `SUPABASE_URL`  | Evet   | Supabase proje URL’i (backend için) |
 | `SUPABASE_KEY`  | Evet   | Supabase anon/public API key (backend için) |
+| `APP_URL`       | Önerilen | Maile gelen “Online Teklif Formu” linkinin domain’i (örn. `https://malzeme.sirket.com`). Yoksa localhost kullanılır. |
 | `ASPNETCORE_ENVIRONMENT` | Hayır | `Production` (varsayılan) |
 
 ## Build Arguments (Zorunlu – "supabaseKey is required" hatasını önler)

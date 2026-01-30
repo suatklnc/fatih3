@@ -1,5 +1,6 @@
 using Supabase.Postgrest;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 using MaterialManagement.Models;
 using MaterialManagement.Models.DTOs;
 
@@ -12,19 +13,22 @@ public class MaterialRequestService : IMaterialRequestService
     private readonly IEmailService _emailService;
     private readonly ISupplierService _supplierService;
     private readonly IMaterialService _materialService;
+    private readonly IConfiguration _configuration;
 
     public MaterialRequestService(
         SupabaseService supabaseService, 
         ILogger<MaterialRequestService> logger,
         IEmailService emailService,
         ISupplierService supplierService,
-        IMaterialService materialService)
+        IMaterialService materialService,
+        IConfiguration configuration)
     {
         _supabaseService = supabaseService;
         _logger = logger;
         _emailService = emailService;
         _supplierService = supplierService;
         _materialService = materialService;
+        _configuration = configuration;
     }
 
     // ... (GetAll, GetById, Create, UpdateStatus, SendToPurchasing aynı)
@@ -85,8 +89,9 @@ public class MaterialRequestService : IMaterialRequestService
                         .From<QuotationToken>()
                         .Insert(tokenEntity);
                     
-                    // Online form URL'i - frontend URL'ini kullan
-                    var formUrl = $"http://localhost:3000/supplier-quote/{quotationToken}";
+                    // Online form URL'i: mevcut domain (Coolify/production) veya localhost
+                    var baseUrl = (_configuration["App:BaseUrl"] ?? Environment.GetEnvironmentVariable("APP_URL") ?? "http://localhost:3000").TrimEnd('/');
+                    var formUrl = $"{baseUrl}/supplier-quote/{quotationToken}";
                     
                     string body = $@"
 <!DOCTYPE html>

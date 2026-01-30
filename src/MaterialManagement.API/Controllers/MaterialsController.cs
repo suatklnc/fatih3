@@ -9,11 +9,13 @@ namespace MaterialManagement.API.Controllers;
 public class MaterialsController : ControllerBase
 {
     private readonly IMaterialService _materialService;
+    private readonly IMaterialImportService _importService;
     private readonly ILogger<MaterialsController> _logger;
 
-    public MaterialsController(IMaterialService materialService, ILogger<MaterialsController> logger)
+    public MaterialsController(IMaterialService materialService, IMaterialImportService importService, ILogger<MaterialsController> logger)
     {
         _materialService = materialService;
+        _importService = importService;
         _logger = logger;
     }
 
@@ -73,6 +75,28 @@ public class MaterialsController : ControllerBase
         {
             _logger.LogError(ex, "Error getting material: {Id}", id);
             return StatusCode(500, new { message = ex.Message });
+        }
+    }
+
+    [HttpPost("import")]
+    [RequestSizeLimit(5_242_880)]
+    public async Task<ActionResult<object>> ImportFromExcel(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest(new { message = "Excel dosyası seçiniz." });
+        var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+        if (ext != ".xlsx" && ext != ".xls")
+            return BadRequest(new { message = "Sadece .xlsx veya .xls dosyası yükleyebilirsiniz." });
+        try
+        {
+            await using var stream = file.OpenReadStream();
+            var result = await _importService.ImportFromExcelAsync(stream);
+            return Ok(new { imported = result.Imported, skipped = result.Skipped, errors = result.Errors });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Excel import hatası");
+            return StatusCode(500, new { message = "Import hatası: " + ex.Message });
         }
     }
 

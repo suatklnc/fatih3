@@ -5,6 +5,7 @@ import './Materials.css'
 function Materials() {
   const [materials, setMaterials] = useState([])
   const [loading, setLoading] = useState(true)
+  const [importLoading, setImportLoading] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [formData, setFormData] = useState({
     code: '',
@@ -73,6 +74,24 @@ function Materials() {
     }
   }
 
+  const handleImportExcel = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImportLoading(true)
+    try {
+      const res = await materialsApi.importFromExcel(file)
+      const d = res.data
+      loadMaterials()
+      const msg = `${d.imported ?? 0} malzeme eklendi.${d.skipped ? ` ${d.skipped} satır atlandı.` : ''}${d.errors?.length ? ` Hatalar: ${d.errors.join('; ')}` : ''}`
+      alert(msg)
+    } catch (err) {
+      alert('Excel içe aktarma hatası: ' + (err.response?.data?.message || err.message))
+    } finally {
+      setImportLoading(false)
+      e.target.value = ''
+    }
+  }
+
   if (loading) {
     return <div className="loading">Yükleniyor...</div>
   }
@@ -81,9 +100,22 @@ function Materials() {
     <div className="materials">
       <div className="page-header">
         <h1>Malzeme Havuzu</h1>
-        <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
-          {showForm ? 'İptal' : '+ Yeni Malzeme'}
-        </button>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <input
+            type="file"
+            accept=".xlsx,.xls"
+            style={{ display: 'none' }}
+            id="excel-import"
+            onChange={handleImportExcel}
+            disabled={importLoading}
+          />
+          <label htmlFor="excel-import" className="btn" style={{ marginBottom: 0, cursor: importLoading ? 'not-allowed' : 'pointer' }}>
+            {importLoading ? 'İçe aktarılıyor...' : '📥 Excel\'den İçe Aktar'}
+          </label>
+          <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
+            {showForm ? 'İptal' : '+ Yeni Malzeme'}
+          </button>
+        </div>
       </div>
 
       {showForm && (
