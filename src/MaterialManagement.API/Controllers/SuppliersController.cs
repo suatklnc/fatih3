@@ -46,20 +46,44 @@ public class SuppliersController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Supplier>> GetById(Guid id)
+    public async Task<ActionResult<object>> GetById(Guid id)
     {
         var supplier = await _service.GetByIdAsync(id);
         if (supplier == null) return NotFound();
-        return Ok(supplier);
+        return Ok(new
+        {
+            supplier.Id,
+            supplier.Name,
+            supplier.TaxNumber,
+            supplier.Address,
+            supplier.Phone,
+            supplier.Email,
+            supplier.ContactPerson,
+            supplier.IsActive,
+            supplier.CreatedAt,
+            supplier.UpdatedAt
+        });
     }
 
     [HttpPost]
-    public async Task<ActionResult<Supplier>> Create(Supplier supplier)
+    public async Task<ActionResult<object>> Create(Supplier supplier)
     {
         try
         {
             var created = await _service.CreateAsync(supplier);
-            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+            return Ok(new
+            {
+                created.Id,
+                created.Name,
+                created.TaxNumber,
+                created.Address,
+                created.Phone,
+                created.Email,
+                created.ContactPerson,
+                created.IsActive,
+                created.CreatedAt,
+                created.UpdatedAt
+            });
         }
         catch (Exception ex)
         {
@@ -69,7 +93,7 @@ public class SuppliersController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<Supplier>> Update(Guid id, Supplier supplier)
+    public async Task<ActionResult<object>> Update(Guid id, Supplier supplier)
     {
         if (id != supplier.Id && supplier.Id != Guid.Empty)
             return BadRequest();
@@ -77,7 +101,19 @@ public class SuppliersController : ControllerBase
         try
         {
             var updated = await _service.UpdateAsync(id, supplier);
-            return Ok(updated);
+            return Ok(new
+            {
+                updated.Id,
+                updated.Name,
+                updated.TaxNumber,
+                updated.Address,
+                updated.Phone,
+                updated.Email,
+                updated.ContactPerson,
+                updated.IsActive,
+                updated.CreatedAt,
+                updated.UpdatedAt
+            });
         }
         catch (Exception ex)
         {

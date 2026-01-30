@@ -43,8 +43,10 @@ function MaterialRequests() {
   const [selectedSupplierIds, setSelectedSupplierIds] = useState([])
   const [supplierModalLoading, setSupplierModalLoading] = useState(false)
 
+  // Tüm kullanıcılar (yetkisiz, satın alma, yönetici) pending dahil tüm talepleri görebilir
+  // Sadece rejected talepler satın alma biriminden gizlenir
   const displayRequests = isPurchasingOnly
-    ? requests.filter(r => r.status !== 'pending' && r.status !== 'rejected')
+    ? requests.filter(r => r.status !== 'rejected')
     : requests
 
   const [formData, setFormData] = useState({
