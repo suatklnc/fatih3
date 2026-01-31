@@ -24,22 +24,42 @@ function Quotations() {
     loadData()
   }, [])
 
+  // İlk yükleme - malzemeler HARİÇ (lazy load)
   const loadData = async () => {
     try {
-      const [quotationsRes, requestsRes, materialsRes, suppliersRes] = await Promise.all([
+      const [quotationsRes, requestsRes, suppliersRes] = await Promise.all([
         quotationsApi.getAll(),
         materialRequestsApi.getAll(),
-        materialsApi.getAll(),
         suppliersApi.getAll(),
       ])
       setQuotations(quotationsRes.data || [])
       setRequests(requestsRes.data || [])
-      setMaterials(materialsRes.data || [])
       setSuppliers(suppliersRes.data || [])
     } catch (error) {
       console.error('Error loading data:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  // Malzemeleri yükle - detay görüntülendiğinde
+  const loadMaterialsIfNeeded = async () => {
+    if (materials.length > 0) return
+    try {
+      const res = await materialsApi.getAll()
+      setMaterials(res.data || [])
+    } catch (error) {
+      console.error('Error loading materials:', error)
+    }
+  }
+
+  // Sadece teklifleri yenile
+  const refreshQuotations = async () => {
+    try {
+      const res = await quotationsApi.getAll()
+      setQuotations(res.data || [])
+    } catch (error) {
+      console.error('Error refreshing quotations:', error)
     }
   }
 
@@ -67,6 +87,9 @@ function Quotations() {
     setSelectedQuotation(quotation)
     setLoadingDetails(true)
     setShowDetailModal(true)
+    
+    // Malzeme isimlerini göstermek için yükle
+    loadMaterialsIfNeeded()
 
     try {
       const response = await quotationsApi.getById(quotation.id)
@@ -91,7 +114,7 @@ function Quotations() {
   const handleStatusChange = async (id, status) => {
     try {
       await quotationsApi.updateStatus(id, status)
-      loadData()
+      refreshQuotations()
       setShowDetailModal(false)
       setShowCompareModal(false)
     } catch (error) {
@@ -104,7 +127,7 @@ function Quotations() {
     if (window.confirm('Bu teklifi silmek istediğinize emin misiniz?')) {
       try {
         await quotationsApi.delete(id)
-        loadData()
+        refreshQuotations()
         setShowDetailModal(false)
         setShowCompareModal(false)
       } catch (error) {

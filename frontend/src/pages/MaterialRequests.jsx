@@ -63,28 +63,44 @@ function MaterialRequests() {
     loadData()
   }, [])
 
+  // İlk yükleme - malzemeler HARİÇ (lazy load edilecek)
   const loadData = async () => {
     try {
-      console.log('Loading data...')
-      const [requestsRes, materialsRes, projectsRes, suppliersRes] = await Promise.all([
+      const [requestsRes, projectsRes, suppliersRes] = await Promise.all([
         materialRequestsApi.getAll(),
-        materialsApi.getAll(),
         projectsApi.getAll(),
         suppliersApi.getAll()
       ])
-      console.log('Projects response:', projectsRes)
-      console.log('Projects data:', projectsRes.data)
-      const materialsData = materialsRes.data || []
       setRequests(requestsRes.data || [])
-      setMaterials(materialsData)
-      setFilteredMaterials(materialsData)
       setProjects(projectsRes.data || [])
       setSuppliers(suppliersRes.data || [])
     } catch (error) {
       console.error('Error loading data:', error)
-      console.error('Error details:', error.response)
     } finally {
       setLoading(false)
+    }
+  }
+
+  // Malzemeleri yükle - form açıldığında çağrılır
+  const loadMaterials = async () => {
+    if (materials.length > 0) return // Zaten yüklüyse tekrar yükleme
+    try {
+      const res = await materialsApi.getAll()
+      const materialsData = res.data || []
+      setMaterials(materialsData)
+      setFilteredMaterials(materialsData)
+    } catch (error) {
+      console.error('Error loading materials:', error)
+    }
+  }
+
+  // Sadece talepleri yenile - hızlı güncelleme için
+  const refreshRequests = async () => {
+    try {
+      const res = await materialRequestsApi.getAll()
+      setRequests(res.data || [])
+    } catch (error) {
+      console.error('Error refreshing requests:', error)
     }
   }
 
@@ -162,7 +178,7 @@ function MaterialRequests() {
         notes: '',
         items: [{ materialId: '', quantity: 0, notes: '' }],
       })
-      loadData()
+      refreshRequests()
     } catch (error) {
       console.error('Error creating request:', error)
       console.error('Error response data:', error.response?.data)
@@ -173,7 +189,7 @@ function MaterialRequests() {
   const handleStatusChange = async (id, status) => {
     try {
       await materialRequestsApi.updateStatus(id, status)
-      loadData()
+      refreshRequests()
     } catch (error) {
       console.error('Error updating status:', error)
       alert('Durum güncellenirken hata oluştu')
@@ -185,7 +201,7 @@ function MaterialRequests() {
 
     try {
       await materialRequestsApi.delete(id)
-      loadData()
+      refreshRequests()
     } catch (error) {
       console.error('Error deleting request:', error)
       alert('Talep silinirken hata oluştu')
@@ -242,7 +258,7 @@ function MaterialRequests() {
   const handleSendToPurchasing = async (id) => {
     try {
       await materialRequestsApi.sendToPurchasing(id)
-      loadData()
+      refreshRequests()
     } catch (error) {
       console.error('Error sending to purchasing:', error)
       alert('Satın almaya gönderilirken hata oluştu')
@@ -267,7 +283,7 @@ function MaterialRequests() {
       await materialRequestsApi.sendToSuppliers(selectedRequest.id, selectedSupplierIds)
       setShowSupplierModal(false)
       setSelectedRequest(null)
-      loadData()
+      refreshRequests()
       alert('Tedarikçilere mail gönderildi ve durum güncellendi.')
     } catch (error) {
       console.error('Error sending to suppliers:', error)
@@ -396,7 +412,10 @@ function MaterialRequests() {
 
       <div className="page-header">
         <h1>Malzeme Talepleri</h1>
-        <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
+        <button className="btn btn-primary" onClick={() => {
+          if (!showForm) loadMaterials() // Form açılırken malzemeleri yükle
+          setShowForm(!showForm)
+        }}>
           {showForm ? 'İptal' : '+ Yeni Talep'}
         </button>
       </div>
