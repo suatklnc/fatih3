@@ -108,6 +108,17 @@ export const AuthProvider = ({ children }) => {
         return data
     }
 
+    const loginWithGoogle = async () => {
+        const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo: window.location.origin + '/dashboard'
+            }
+        })
+        if (error) throw error
+        return data
+    }
+
     const signUp = async (email, password, metadata) => {
         const { data, error } = await supabase.auth.signUp({
             email,
@@ -135,7 +146,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     return (
-        <AuthContext.Provider value={{ session, user, userProfile, login, signUp, logout, loading }}>
+        <AuthContext.Provider value={{ session, user, userProfile, login, loginWithGoogle, signUp, logout, loading }}>
             {!loading ? children : <div className="loading" style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Yükleniyor...</div>}
         </AuthContext.Provider>
     )
