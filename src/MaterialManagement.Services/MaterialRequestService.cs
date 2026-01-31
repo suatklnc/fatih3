@@ -90,7 +90,11 @@ public class MaterialRequestService : IMaterialRequestService
                         .Insert(tokenEntity);
                     
                     // Online form URL'i: mevcut domain (Coolify/production) veya localhost
-                    var baseUrl = (_configuration["App:BaseUrl"] ?? Environment.GetEnvironmentVariable("APP_URL") ?? "http://localhost:3000").TrimEnd('/');
+                    var configBaseUrl = _configuration["App:BaseUrl"];
+                    var envBaseUrl = Environment.GetEnvironmentVariable("APP_URL");
+                    var baseUrl = (!string.IsNullOrEmpty(configBaseUrl) ? configBaseUrl : 
+                                  !string.IsNullOrEmpty(envBaseUrl) ? envBaseUrl : 
+                                  "http://localhost:3000").TrimEnd('/');
                     var formUrl = $"{baseUrl}/supplier-quote/{quotationToken}";
                     
                     string body = $@"

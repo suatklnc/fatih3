@@ -201,8 +201,8 @@ export default function SupplierQuoteForm() {
                                     {quotationItems.map((item, index) => (
                                         <tr key={item.materialId}>
                                             <td>{index + 1}</td>
-                                            <td>{item.materialCode}</td>
-                                            <td className="material-name">{item.materialName}</td>
+                                            <td className="material-code">{item.materialCode}</td>
+                                            <td className="material-name" title={item.materialName}>{item.materialName}</td>
                                             <td className="quantity">{item.quantity}</td>
                                             <td>{item.unit}</td>
                                             <td>

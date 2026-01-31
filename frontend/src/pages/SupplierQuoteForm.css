@@ -207,7 +207,17 @@
 
 .materials-table .material-name {
     font-weight: 500;
-    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 250px;
+}
+
+.materials-table .material-code {
+    font-size: 11px;
+    color: #666;
+    font-family: monospace;
+    white-space: nowrap;
 }
 
 .materials-table .quantity {
@@ -378,34 +388,228 @@
     font-size: 12px;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .quote-form-container {
-        padding: 20px 10px;
+/* Responsive - Tablet */
+@media (max-width: 992px) {
+    .materials-table {
+        font-size: 13px;
     }
 
-    .quote-form-header,
-    .quote-info-section,
-    .materials-section,
-    .additional-section,
-    .submit-section {
-        padding: 20px;
+    .materials-table th,
+    .materials-table td {
+        padding: 10px 8px;
+    }
+
+    .price-input,
+    .delivery-input {
+        width: 80px;
+        padding: 6px 8px;
+    }
+
+    .notes-input {
+        width: 100px;
+    }
+}
+
+/* Responsive - Mobile */
+@media (max-width: 768px) {
+    .quote-form-container {
+        padding: 10px 5px;
+    }
+
+    .quote-form-card {
+        border-radius: 12px;
+    }
+
+    .quote-form-header {
+        padding: 20px 15px;
+    }
+
+    .quote-form-header h1 {
+        font-size: 22px;
+    }
+
+    .quote-form-header p {
+        font-size: 14px;
+    }
+
+    .quote-info-section {
+        padding: 15px;
     }
 
     .info-grid {
         grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .info-item .label {
+        font-size: 10px;
+    }
+
+    .info-item .value {
+        font-size: 14px;
+    }
+
+    .request-notes {
+        padding: 12px;
+        font-size: 13px;
+    }
+
+    .materials-section {
+        padding: 15px;
+    }
+
+    .materials-section h3 {
+        font-size: 16px;
+        margin-bottom: 15px;
+    }
+
+    /* Mobile: Hide table columns and show card layout */
+    .materials-table {
+        font-size: 12px;
+    }
+
+    .materials-table th,
+    .materials-table td {
+        padding: 8px 4px;
+    }
+
+    /* Hide some columns on mobile */
+    .materials-table th:nth-child(2),
+    .materials-table td:nth-child(2),
+    .materials-table th:nth-child(5),
+    .materials-table td:nth-child(5),
+    .materials-table th:nth-child(8),
+    .materials-table td:nth-child(8),
+    .materials-table th:nth-child(9),
+    .materials-table td:nth-child(9) {
+        display: none;
+    }
+
+    .materials-table .material-name {
+        max-width: 120px;
+        font-size: 12px;
+    }
+
+    .price-input {
+        width: 70px;
+        padding: 6px;
+        font-size: 13px;
+    }
+
+    .materials-table tfoot td {
+        padding: 12px 8px;
+    }
+
+    .grand-total {
+        font-size: 16px;
+    }
+
+    .additional-section {
+        padding: 15px;
     }
 
     .form-row {
         flex-direction: column;
+        gap: 15px;
+    }
+
+    .form-group label {
+        font-size: 13px;
     }
 
     .date-input {
         width: 100%;
+        padding: 10px 12px;
+    }
+
+    .notes-textarea {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+
+    .submit-section {
+        padding: 20px 15px;
     }
 
     .submit-btn {
         width: 100%;
+        padding: 14px;
+        font-size: 16px;
+    }
+
+    .quote-form-footer {
+        padding: 12px 15px;
+    }
+
+    .quote-form-footer p {
+        font-size: 11px;
+    }
+
+    /* Success/Error cards */
+    .quote-form-card.loading,
+    .quote-form-card.error,
+    .quote-form-card.success {
+        padding: 40px 20px;
+    }
+
+    .error-icon,
+    .success-icon {
+        font-size: 48px;
+    }
+
+    .success-details {
         padding: 15px;
+    }
+}
+
+/* Responsive - Small Mobile */
+@media (max-width: 480px) {
+    .quote-form-container {
+        padding: 5px;
+    }
+
+    .quote-form-header {
+        padding: 15px 12px;
+    }
+
+    .quote-form-header h1 {
+        font-size: 18px;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .materials-section {
+        padding: 12px;
+    }
+
+    .materials-table .material-name {
+        max-width: 100px;
+        font-size: 11px;
+    }
+
+    .price-input {
+        width: 60px;
+        padding: 5px;
+        font-size: 12px;
+    }
+
+    .materials-table .quantity {
+        font-size: 12px;
+    }
+
+    .materials-table .total-cell {
+        font-size: 11px;
+    }
+
+    .additional-section {
+        padding: 12px;
+    }
+
+    .submit-btn {
+        padding: 12px;
+        font-size: 14px;
     }
 }
