@@ -1,7 +1,17 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { materialsApi } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import './Materials.css'
+
+// Debounce hook
+function useDebounce(value, delay) {
+  const [debouncedValue, setDebouncedValue] = useState(value)
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedValue(value), delay)
+    return () => clearTimeout(handler)
+  }, [value, delay])
+  return debouncedValue
+}
 
 function Materials() {
   const { userProfile } = useAuth()
@@ -9,12 +19,19 @@ function Materials() {
   const isPatronOrAdmin = userRole === 'patron' || userRole === 'yönetici'
 
   const [materials, setMaterials] = useState([])
-  const [filteredMaterials, setFilteredMaterials] = useState([])
   const [searchQuery, setSearchQuery] = useState('')
+  const debouncedSearch = useDebounce(searchQuery, 300)
   const [selectedMaterials, setSelectedMaterials] = useState(new Set())
   const [loading, setLoading] = useState(true)
   const [importLoading, setImportLoading] = useState(false)
   const [showForm, setShowForm] = useState(false)
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
+  const pageSize = 50
+  
   const [formData, setFormData] = useState({
     code: '',
     name: '',
@@ -25,37 +42,36 @@ function Materials() {
     minStockLevel: 0,
   })
 
-  useEffect(() => {
-    loadMaterials()
-  }, [])
-
-  const loadMaterials = async () => {
+  const loadMaterials = useCallback(async (page = 1, search = '') => {
+    setLoading(true)
     try {
-      const response = await materialsApi.getAll()
-      const materialsData = response.data || []
-      setMaterials(materialsData)
-      setFilteredMaterials(materialsData)
+      const response = await materialsApi.getPaged(page, pageSize, search)
+      const data = response.data
+      setMaterials(data.items || [])
+      setTotalCount(data.totalCount || 0)
+      setTotalPages(data.totalPages || 0)
+      setCurrentPage(data.page || 1)
     } catch (error) {
       console.error('Error loading materials:', error)
+      setMaterials([])
     } finally {
       setLoading(false)
     }
-  }
+  }, [pageSize])
 
+  // İlk yükleme ve arama değiştiğinde
   useEffect(() => {
-    if (!searchQuery.trim()) {
-      setFilteredMaterials(materials)
-      return
-    }
-    const query = searchQuery.toLowerCase().trim()
-    const filtered = materials.filter(m => 
-      (m.code?.toLowerCase().includes(query) || '') ||
-      (m.name?.toLowerCase().includes(query) || '') ||
-      (m.category?.toLowerCase().includes(query) || '') ||
-      (m.description?.toLowerCase().includes(query) || '')
-    )
-    setFilteredMaterials(filtered)
-  }, [searchQuery, materials])
+    setCurrentPage(1)
+    loadMaterials(1, debouncedSearch)
+  }, [debouncedSearch, loadMaterials])
+
+  // Sayfa değiştiğinde
+  const handlePageChange = (newPage) => {
+    if (newPage < 1 || newPage > totalPages) return
+    setCurrentPage(newPage)
+    loadMaterials(newPage, debouncedSearch)
+    setSelectedMaterials(new Set())
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -72,13 +88,13 @@ function Materials() {
         stockQuantity: 0,
         minStockLevel: 0,
       })
-      loadMaterials()
+      loadMaterials(currentPage, debouncedSearch)
     } catch (error) {
       console.error('Error creating material:', error)
       // Veri kaydedilmiş olabilir, sayfayı yenile
       if (error.response?.status === 201 || error.response?.status === 200) {
         setShowForm(false)
-        loadMaterials()
+        loadMaterials(currentPage, debouncedSearch)
       } else {
         alert('Malzeme eklenirken hata oluştu: ' + (error.response?.data?.message || error.message))
       }
@@ -90,7 +106,7 @@ function Materials() {
 
     try {
       await materialsApi.delete(id)
-      loadMaterials()
+      loadMaterials(currentPage, debouncedSearch)
       setSelectedMaterials(prev => {
         const next = new Set(prev)
         next.delete(id)
@@ -117,10 +133,10 @@ function Materials() {
   }
 
   const handleSelectAll = () => {
-    if (selectedMaterials.size === filteredMaterials.length) {
+    if (selectedMaterials.size === materials.length) {
       setSelectedMaterials(new Set())
     } else {
-      setSelectedMaterials(new Set(filteredMaterials.map(m => m.id)))
+      setSelectedMaterials(new Set(materials.map(m => m.id)))
     }
   }
 
@@ -146,7 +162,7 @@ function Materials() {
       }
     }
 
-    loadMaterials()
+    loadMaterials(currentPage, debouncedSearch)
     setSelectedMaterials(new Set())
     
     if (failCount === 0) {
@@ -157,18 +173,19 @@ function Materials() {
   }
 
   const handleDeleteAll = async () => {
-    if (materials.length === 0) {
+    if (totalCount === 0) {
       alert('Silinecek malzeme bulunamadı.')
       return
     }
-    if (!confirm(`UYARI: Tüm malzemeleri (${materials.length} adet) silmek istediğinize emin misiniz?\n\nBu işlem geri alınamaz!`)) return
+    if (!confirm(`UYARI: Tüm malzemeleri (${totalCount} adet) silmek istediğinize emin misiniz?\n\nBu işlem geri alınamaz!`)) return
     if (!confirm('Bu işlem TÜM malzemeleri kalıcı olarak silecek. Devam etmek istiyor musunuz?')) return
 
     setLoading(true)
     try {
       const response = await materialsApi.deleteAll()
       alert(response.data?.message || 'Tüm malzemeler silindi.')
-      loadMaterials()
+      setCurrentPage(1)
+      loadMaterials(1, debouncedSearch)
       setSelectedMaterials(new Set())
     } catch (error) {
       console.error('Error deleting all materials:', error)
@@ -185,7 +202,8 @@ function Materials() {
     try {
       const res = await materialsApi.importFromExcel(file)
       const d = res.data
-      loadMaterials()
+      setCurrentPage(1)
+      loadMaterials(1, debouncedSearch)
       const msg = `${d.imported ?? 0} malzeme eklendi.${d.skipped ? ` ${d.skipped} satır atlandı.` : ''}${d.errors?.length ? ` Hatalar: ${d.errors.join('; ')}` : ''}`
       alert(msg)
     } catch (err) {
@@ -224,13 +242,13 @@ function Materials() {
               🗑️ Seçili Malzemeleri Sil ({selectedMaterials.size})
             </button>
           )}
-          {isPatronOrAdmin && materials.length > 0 && (
+          {isPatronOrAdmin && totalCount > 0 && (
             <button 
               className="btn" 
               onClick={handleDeleteAll}
               style={{ background: '#8B0000', color: 'white' }}
             >
-              ⚠️ Tümünü Sil ({materials.length})
+              ⚠️ Tümünü Sil ({totalCount})
             </button>
           )}
         </div>
@@ -355,19 +373,19 @@ function Materials() {
       )}
 
       <div className="card">
-        {filteredMaterials.length > 0 && (
+        {materials.length > 0 && (
           <div style={{ padding: '10px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
               <input
                 type="checkbox"
-                checked={selectedMaterials.size === filteredMaterials.length && filteredMaterials.length > 0}
+                checked={selectedMaterials.size === materials.length && materials.length > 0}
                 onChange={handleSelectAll}
                 style={{ width: '18px', height: '18px', cursor: 'pointer' }}
               />
-              <span>Tümünü Seç ({selectedMaterials.size} seçili)</span>
+              <span>Sayfadakileri Seç ({selectedMaterials.size} seçili)</span>
             </label>
             <span style={{ color: '#666', fontSize: '14px' }}>
-              {filteredMaterials.length} malzeme gösteriliyor {materials.length !== filteredMaterials.length && `(${materials.length} toplam)`}
+              Sayfa {currentPage}/{totalPages} • {totalCount} malzeme
             </span>
           </div>
         )}
@@ -386,14 +404,14 @@ function Materials() {
             </tr>
           </thead>
           <tbody>
-            {filteredMaterials.length === 0 ? (
+            {materials.length === 0 ? (
               <tr>
                 <td colSpan="8" style={{ textAlign: 'center', padding: '20px' }}>
                   {searchQuery ? 'Arama sonucu bulunamadı' : 'Henüz malzeme eklenmemiş'}
                 </td>
               </tr>
             ) : (
-              filteredMaterials.map((material) => (
+              materials.map((material) => (
                 <tr key={material.id} style={{ backgroundColor: selectedMaterials.has(material.id) ? '#f0f8ff' : 'transparent' }}>
                   <td style={{ textAlign: 'center' }}>
                     <input
@@ -426,6 +444,56 @@ function Materials() {
           </tbody>
         </table>
         </div>
+        
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div style={{ 
+            padding: '15px', 
+            borderTop: '1px solid #eee', 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            gap: '10px' 
+          }}>
+            <button
+              className="btn"
+              onClick={() => handlePageChange(1)}
+              disabled={currentPage === 1}
+              style={{ padding: '8px 12px' }}
+            >
+              ««
+            </button>
+            <button
+              className="btn"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              style={{ padding: '8px 12px' }}
+            >
+              «
+            </button>
+            
+            <span style={{ margin: '0 15px', fontWeight: '500' }}>
+              Sayfa {currentPage} / {totalPages}
+            </span>
+            
+            <button
+              className="btn"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              style={{ padding: '8px 12px' }}
+            >
+              »
+            </button>
+            <button
+              className="btn"
+              onClick={() => handlePageChange(totalPages)}
+              disabled={currentPage === totalPages}
+              style={{ padding: '8px 12px' }}
+            >
+              »»
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )

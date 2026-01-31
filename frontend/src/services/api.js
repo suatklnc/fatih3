@@ -12,6 +12,11 @@ const api = axios.create({
 // Materials API
 export const materialsApi = {
   getAll: () => api.get('/materials'),
+  getPaged: (page = 1, pageSize = 50, search = '') => {
+    const params = new URLSearchParams({ page, pageSize })
+    if (search) params.append('search', search)
+    return api.get(`/materials?${params.toString()}`)
+  },
   getById: (id) => api.get(`/materials/${id}`),
   create: (data) => api.post('/materials', data),
   update: (id, data) => api.put(`/materials/${id}`, data),

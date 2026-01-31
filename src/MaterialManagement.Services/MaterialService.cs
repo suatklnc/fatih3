@@ -54,6 +54,71 @@ public class MaterialService : IMaterialService
         }
     }
 
+    public async Task<PagedResult<Material>> GetMaterialsPagedAsync(int page, int pageSize, string? search = null)
+    {
+        try
+        {
+            var offset = (page - 1) * pageSize;
+            var hasSearch = !string.IsNullOrWhiteSpace(search);
+            var searchPattern = hasSearch ? $"%{search!.ToLower()}%" : "";
+            
+            // Toplam sayıyı al
+            int totalCount;
+            if (hasSearch)
+            {
+                var countResponse = await _supabaseService.Client
+                    .From<Material>()
+                    .Filter("code", Supabase.Postgrest.Constants.Operator.ILike, searchPattern)
+                    .Select("id")
+                    .Get();
+                totalCount = countResponse.Models.Count;
+            }
+            else
+            {
+                var countResponse = await _supabaseService.Client
+                    .From<Material>()
+                    .Select("id")
+                    .Get();
+                totalCount = countResponse.Models.Count;
+            }
+            
+            // Sayfalanmış veriyi al
+            Supabase.Postgrest.Responses.ModeledResponse<Material> response;
+            if (hasSearch)
+            {
+                response = await _supabaseService.Client
+                    .From<Material>()
+                    .Filter("code", Supabase.Postgrest.Constants.Operator.ILike, searchPattern)
+                    .Order("code", Supabase.Postgrest.Constants.Ordering.Ascending)
+                    .Offset(offset)
+                    .Limit(pageSize)
+                    .Get();
+            }
+            else
+            {
+                response = await _supabaseService.Client
+                    .From<Material>()
+                    .Order("code", Supabase.Postgrest.Constants.Ordering.Ascending)
+                    .Offset(offset)
+                    .Limit(pageSize)
+                    .Get();
+            }
+            
+            return new PagedResult<Material>
+            {
+                Items = response.Models,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting paged materials");
+            throw;
+        }
+    }
+
     public async Task<Material?> GetMaterialByIdAsync(Guid id)
     {
         try

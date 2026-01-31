@@ -20,12 +20,40 @@ public class MaterialsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<object>> GetAll()
+    public async Task<ActionResult<object>> GetAll([FromQuery] int? page, [FromQuery] int? pageSize, [FromQuery] string? search)
     {
         try
         {
+            // Eğer pagination parametreleri varsa, sayfalanmış sonuç döndür
+            if (page.HasValue && pageSize.HasValue)
+            {
+                var pagedResult = await _materialService.GetMaterialsPagedAsync(page.Value, pageSize.Value, search);
+                var cleanItems = pagedResult.Items.Select(m => new
+                {
+                    m.Id,
+                    m.Code,
+                    m.Name,
+                    m.Description,
+                    m.Unit,
+                    m.Category,
+                    m.StockQuantity,
+                    m.MinStockLevel,
+                    m.CreatedAt,
+                    m.UpdatedAt
+                }).ToList();
+                
+                return Ok(new
+                {
+                    items = cleanItems,
+                    totalCount = pagedResult.TotalCount,
+                    page = pagedResult.Page,
+                    pageSize = pagedResult.PageSize,
+                    totalPages = pagedResult.TotalPages
+                });
+            }
+            
+            // Geriye uyumluluk için: pagination yoksa tüm verileri döndür
             var materials = await _materialService.GetAllMaterialsAsync();
-            // Anonymous object ile BaseModel'den gelen property'leri temizle
             var cleanMaterials = materials.Select(m => new
             {
                 m.Id,
