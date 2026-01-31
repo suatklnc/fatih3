@@ -374,33 +374,37 @@ function Materials() {
 
       <div className="card">
         {materials.length > 0 && (
-          <div style={{ padding: '10px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+          <div className="materials-toolbar">
+            <label className="select-all-label">
               <input
                 type="checkbox"
                 checked={selectedMaterials.size === materials.length && materials.length > 0}
                 onChange={handleSelectAll}
-                style={{ width: '18px', height: '18px', cursor: 'pointer' }}
               />
-              <span>Sayfadakileri Seç ({selectedMaterials.size} seçili)</span>
+              <span className="select-text">
+                <span className="select-text-full">Sayfadakileri Seç</span>
+                <span className="select-text-short">Seç</span>
+                ({selectedMaterials.size})
+              </span>
             </label>
-            <span style={{ color: '#666', fontSize: '14px' }}>
-              Sayfa {currentPage}/{totalPages} • {totalCount} malzeme
+            <span className="materials-count">
+              <span className="count-full">Sayfa {currentPage}/{totalPages} • {totalCount} malzeme</span>
+              <span className="count-short">{currentPage}/{totalPages}</span>
             </span>
           </div>
         )}
-        <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
+        <div className="materials-table-wrapper" style={{ maxHeight: '500px', overflowY: 'auto' }}>
         <table style={{ width: '100%' }}>
           <thead style={{ position: 'sticky', top: 0, background: '#f8f9fa', zIndex: 1 }}>
             <tr>
-              <th style={{ width: '40px' }}></th>
-              <th>Kod</th>
-              <th>Ad</th>
-              <th>Birim</th>
-              <th>Kategori</th>
-              <th>Stok</th>
-              <th>Min. Stok</th>
-              <th>İşlemler</th>
+              <th style={{ width: '30px' }}></th>
+              <th className="col-name">Malzeme</th>
+              <th className="col-code hide-mobile">Kod</th>
+              <th className="col-unit hide-mobile">Birim</th>
+              <th className="col-category hide-mobile">Kategori</th>
+              <th className="col-stock">Stok</th>
+              <th className="col-minstock hide-mobile">Min.</th>
+              <th className="col-actions">İşlem</th>
             </tr>
           </thead>
           <tbody>
@@ -413,26 +417,39 @@ function Materials() {
             ) : (
               materials.map((material) => (
                 <tr key={material.id} style={{ backgroundColor: selectedMaterials.has(material.id) ? '#f0f8ff' : 'transparent' }}>
-                  <td style={{ textAlign: 'center' }}>
+                  <td style={{ textAlign: 'center', padding: '6px 4px' }}>
                     <input
                       type="checkbox"
                       checked={selectedMaterials.has(material.id)}
                       onChange={() => handleToggleSelect(material.id)}
-                      style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                      style={{ width: '16px', height: '16px', cursor: 'pointer' }}
                     />
                   </td>
-                  <td>{material.code}</td>
-                  <td>{material.name}</td>
-                  <td>{material.unit}</td>
-                  <td>{material.category || '-'}</td>
-                  <td>{material.stockQuantity}</td>
-                  <td>{material.minStockLevel}</td>
-                  <td>
+                  <td className="col-name">
+                    <div className="material-name-cell">
+                      <span className="material-name" title={material.name}>{material.name}</span>
+                      <span className="material-code-mobile">{material.code}</span>
+                    </div>
+                  </td>
+                  <td className="col-code hide-mobile">
+                    <span style={{ 
+                      fontFamily: 'monospace', 
+                      fontSize: '11px',
+                      color: '#666'
+                    }} title={material.code}>
+                      {material.code}
+                    </span>
+                  </td>
+                  <td className="col-unit hide-mobile">{material.unit}</td>
+                  <td className="col-category hide-mobile">{material.category || '-'}</td>
+                  <td className="col-stock">{material.stockQuantity}</td>
+                  <td className="col-minstock hide-mobile">{material.minStockLevel}</td>
+                  <td className="col-actions">
                     {isPatronOrAdmin && (
                       <button
                         className="btn btn-danger"
                         onClick={() => handleDelete(material.id)}
-                        style={{ fontSize: '12px', padding: '5px 10px' }}
+                        style={{ fontSize: '11px', padding: '4px 8px' }}
                       >
                         Sil
                       </button>
@@ -447,48 +464,37 @@ function Materials() {
         
         {/* Pagination Controls */}
         {totalPages > 1 && (
-          <div style={{ 
-            padding: '15px', 
-            borderTop: '1px solid #eee', 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            gap: '10px' 
-          }}>
+          <div className="pagination-controls">
             <button
-              className="btn"
+              className="btn pagination-btn"
               onClick={() => handlePageChange(1)}
               disabled={currentPage === 1}
-              style={{ padding: '8px 12px' }}
             >
               ««
             </button>
             <button
-              className="btn"
+              className="btn pagination-btn"
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
-              style={{ padding: '8px 12px' }}
             >
               «
             </button>
             
-            <span style={{ margin: '0 15px', fontWeight: '500' }}>
-              Sayfa {currentPage} / {totalPages}
+            <span className="pagination-info">
+              {currentPage} / {totalPages}
             </span>
             
             <button
-              className="btn"
+              className="btn pagination-btn"
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
-              style={{ padding: '8px 12px' }}
             >
               »
             </button>
             <button
-              className="btn"
+              className="btn pagination-btn"
               onClick={() => handlePageChange(totalPages)}
               disabled={currentPage === totalPages}
-              style={{ padding: '8px 12px' }}
             >
               »»
             </button>

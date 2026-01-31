@@ -1,5 +1,6 @@
 .materials {
   max-width: 1400px;
+  width: 100%;
 }
 
 .page-header {
@@ -7,6 +8,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .page-header h1 {
@@ -19,8 +22,309 @@
   gap: 15px;
 }
 
+/* Materials table wrapper */
+.materials-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Search and filter area */
+.materials-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+/* ==================== TABLET ==================== */
+@media (max-width: 992px) {
+  .materials table th,
+  .materials table td {
+    padding: 10px 8px;
+    font-size: 13px;
+  }
+}
+
+/* ==================== MOBILE ==================== */
 @media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .page-header h1 {
+    font-size: 18px;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .page-header .btn {
+    width: 100%;
+  }
+
   .form-row {
     grid-template-columns: 1fr;
+  }
+
+  .materials table {
+    font-size: 11px;
+  }
+
+  .materials table th,
+  .materials table td {
+    padding: 8px 4px;
+  }
+
+  /* Hide description column on mobile */
+  .materials table th:nth-child(4),
+  .materials table td:nth-child(4) {
+    display: none;
+  }
+
+  .materials-filters {
+    flex-direction: column;
+  }
+
+  .materials-filters input,
+  .materials-filters select {
+    width: 100%;
+  }
+}
+
+/* Materials toolbar */
+.materials-toolbar {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.select-all-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.select-all-label input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.select-text-short {
+  display: none;
+}
+
+.materials-count {
+  color: #666;
+  font-size: 14px;
+}
+
+.count-short {
+  display: none;
+}
+
+/* Pagination styles */
+.pagination-controls {
+  padding: 15px;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.pagination-btn {
+  padding: 8px 12px;
+  min-width: 40px;
+}
+
+.pagination-info {
+  margin: 0 10px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+/* Material name cell styles */
+.material-name-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.material-name {
+  font-weight: 500;
+  color: #333;
+}
+
+.material-code-mobile {
+  display: none;
+  font-size: 10px;
+  color: #888;
+  font-family: monospace;
+}
+
+/* Column widths */
+.col-name { 
+  min-width: 150px;
+  max-width: none;
+}
+.col-code { min-width: 100px; }
+.col-stock, .col-minstock { text-align: center; width: 60px; }
+.col-actions { width: 60px; text-align: center; }
+
+/* ==================== MOBILE ==================== */
+@media (max-width: 768px) {
+  /* Hide columns on mobile */
+  .materials .hide-mobile {
+    display: none !important;
+  }
+
+  /* Table layout for mobile */
+  .materials table {
+    table-layout: fixed;
+    width: 100%;
+  }
+
+  /* Show code under name on mobile */
+  .material-code-mobile {
+    display: block;
+  }
+
+  .material-name-cell {
+    max-width: none;
+  }
+
+  .material-name {
+    font-size: 13px;
+    line-height: 1.4;
+    word-break: break-word;
+    display: block;
+  }
+
+  .materials table th,
+  .materials table td {
+    padding: 10px 6px;
+    vertical-align: top;
+  }
+
+  /* Column widths for mobile - name gets most space */
+  .materials .col-name {
+    width: auto;
+  }
+
+  .col-stock {
+    width: 45px;
+    font-size: 12px;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  .col-actions {
+    width: 40px;
+    vertical-align: middle;
+  }
+
+  /* Checkbox column */
+  .materials table th:first-child,
+  .materials table td:first-child {
+    width: 30px;
+    padding: 10px 4px;
+  }
+
+  /* Pagination mobile */
+  .pagination-controls {
+    padding: 10px;
+    gap: 4px;
+  }
+
+  .pagination-btn {
+    padding: 6px 10px;
+    min-width: 36px;
+    font-size: 14px;
+  }
+
+  .pagination-info {
+    margin: 0 6px;
+    font-size: 13px;
+  }
+
+  /* Toolbar mobile */
+  .materials-toolbar {
+    padding: 8px;
+  }
+
+  .select-all-label {
+    gap: 6px;
+    font-size: 13px;
+  }
+
+  .select-all-label input {
+    width: 16px;
+    height: 16px;
+  }
+
+  .select-text-full {
+    display: none;
+  }
+
+  .select-text-short {
+    display: inline;
+  }
+
+  .materials-count {
+    font-size: 12px;
+  }
+
+  .count-full {
+    display: none;
+  }
+
+  .count-short {
+    display: inline;
+  }
+}
+
+/* ==================== SMALL MOBILE ==================== */
+@media (max-width: 480px) {
+  .page-header h1 {
+    font-size: 16px;
+  }
+
+  .materials table th,
+  .materials table td {
+    padding: 6px 3px;
+    font-size: 11px;
+  }
+
+  .material-name-cell {
+    max-width: none;
+  }
+
+  .material-name {
+    font-size: 12px;
+    line-height: 1.3;
+  }
+
+  .material-code-mobile {
+    font-size: 9px;
+  }
+
+  .col-stock {
+    width: 40px;
+  }
+
+  .col-actions {
+    width: 40px;
+  }
+
+  .materials .btn-danger {
+    font-size: 10px !important;
+    padding: 3px 6px !important;
   }
 }

@@ -17,6 +17,7 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  padding: 15px;
 }
 
 .modal-content {
@@ -26,8 +27,125 @@
   max-height: 80vh;
   overflow-y: auto;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  max-width: 600px;
 }
 
 tr:hover {
   background-color: #f5f5f5;
+}
+
+/* Material Request specific responsive styles */
+.material-request {
+  width: 100%;
+}
+
+.material-request .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* ==================== TABLET ==================== */
+@media (max-width: 992px) {
+  .modal-content {
+    max-width: 90%;
+  }
+}
+
+/* ==================== MOBILE ==================== */
+@media (max-width: 768px) {
+  .material-request .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .material-request .page-header h1 {
+    font-size: 18px;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .material-request .page-header .btn {
+    width: 100%;
+  }
+
+  .modal-content {
+    padding: 15px;
+    max-width: 100%;
+    max-height: 90vh;
+    margin: 0;
+  }
+
+  .request-item {
+    padding: 10px;
+  }
+
+  /* Request table mobile */
+  .material-request table {
+    font-size: 12px;
+  }
+
+  .material-request table th,
+  .material-request table td {
+    padding: 8px 4px;
+  }
+
+  /* Hide some columns on mobile */
+  .material-request table th:nth-child(4),
+  .material-request table td:nth-child(4) {
+    display: none;
+  }
+
+  /* Form in card */
+  .material-request .card form {
+    padding: 0;
+  }
+
+  /* Material items table in form */
+  .material-request .card form table {
+    font-size: 11px;
+  }
+
+  .material-request .card form table input {
+    font-size: 14px;
+    padding: 6px 8px;
+  }
+}
+
+/* ==================== SMALL MOBILE ==================== */
+@media (max-width: 480px) {
+  .material-request .page-header h1 {
+    font-size: 16px;
+  }
+
+  .modal-content {
+    padding: 12px;
+  }
+
+  .modal-content h2 {
+    font-size: 16px;
+  }
+
+  .material-request table th,
+  .material-request table td {
+    padding: 6px 3px;
+    font-size: 11px;
+  }
+
+  /* Action buttons stacked on very small screens */
+  .material-request table td:last-child {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .material-request table td:last-child .btn {
+    margin: 0 !important;
+    font-size: 11px;
+    padding: 4px 8px;
+  }
 }

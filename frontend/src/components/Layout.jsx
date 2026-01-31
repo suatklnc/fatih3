@@ -12,8 +12,34 @@ function Layout({ children }) {
   const navigate = useNavigate()
   const { user: authUser, logout } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [currentUser, setCurrentUser] = useState(null)
   const [showProfilePopup, setShowProfilePopup] = useState(false)
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
+
+  // Ekran boyutu değişikliğini dinle
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  // Mobil menü açıkken body scroll'u engelle
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [mobileMenuOpen])
+
+  // Sayfa değiştiğinde mobil menüyü kapat
+  useEffect(() => {
+    setMobileMenuOpen(false)
+  }, [location.pathname])
 
   useEffect(() => {
     const loadCurrentUser = async () => {
@@ -96,6 +122,13 @@ function Layout({ children }) {
     <div className="layout">
       <nav className="navbar">
         <div className="navbar-brand">
+          <button 
+            className="mobile-menu-btn"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Menü"
+          >
+            {mobileMenuOpen ? '✕' : '☰'}
+          </button>
           <h1>Malzeme Yönetim Sistemi</h1>
         </div>
         <div className="navbar-user">
@@ -145,26 +178,48 @@ function Layout({ children }) {
                       left: 0,
                       right: 0,
                       bottom: 0,
-                      zIndex: 999
+                      zIndex: 999,
+                      background: isMobile ? 'rgba(0,0,0,0.3)' : 'transparent'
                     }}
                   />
                   <div style={{
-                    position: 'absolute',
-                    top: '100%',
-                    right: 0,
-                    marginTop: '10px',
+                    position: isMobile ? 'fixed' : 'absolute',
+                    top: isMobile ? 'auto' : '100%',
+                    bottom: isMobile ? '0' : 'auto',
+                    left: isMobile ? '0' : 'auto',
+                    right: isMobile ? '0' : '0',
+                    marginTop: isMobile ? '0' : '10px',
                     background: 'white',
-                    borderRadius: '12px',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-                    padding: '20px',
-                    minWidth: '280px',
+                    borderRadius: isMobile ? '16px 16px 0 0' : '12px',
+                    boxShadow: '0 -4px 20px rgba(0,0,0,0.15)',
+                    padding: isMobile ? '16px' : '20px',
+                    minWidth: isMobile ? 'auto' : '280px',
                     zIndex: 1000,
                     color: '#333'
                   }}>
-                    <div style={{ textAlign: 'center', marginBottom: '15px' }}>
+                    {/* Mobil için sürükleme çubuğu */}
+                    {isMobile && (
                       <div style={{
-                        width: '60px',
-                        height: '60px',
+                        width: '40px',
+                        height: '4px',
+                        background: '#ddd',
+                        borderRadius: '2px',
+                        margin: '0 auto 12px'
+                      }} />
+                    )}
+                    
+                    {/* Kompakt profil başlığı */}
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: isMobile ? '10px' : '12px',
+                      marginBottom: isMobile ? '12px' : '15px',
+                      paddingBottom: isMobile ? '12px' : '15px',
+                      borderBottom: '1px solid #eee'
+                    }}>
+                      <div style={{
+                        width: isMobile ? '45px' : '50px',
+                        height: isMobile ? '45px' : '50px',
                         borderRadius: '50%',
                         background: 'linear-gradient(135deg, #4a90d9, #357abd)',
                         display: 'flex',
@@ -172,58 +227,82 @@ function Layout({ children }) {
                         justifyContent: 'center',
                         color: 'white',
                         fontWeight: 'bold',
-                        fontSize: '20px',
-                        margin: '0 auto 10px'
+                        fontSize: isMobile ? '16px' : '18px',
+                        flexShrink: 0
                       }}>
                         {currentUser.fullName?.split(' ').map(n => n.charAt(0)).join('').slice(0, 2) || '?'}
                       </div>
-                      <div style={{ fontWeight: 'bold', fontSize: '16px' }}>{currentUser.fullName || 'Kullanıcı'}</div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ 
+                          fontWeight: 'bold', 
+                          fontSize: isMobile ? '14px' : '15px',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis'
+                        }}>
+                          {currentUser.fullName || 'Kullanıcı'}
+                        </div>
+                        <div style={{ 
+                          fontSize: isMobile ? '11px' : '12px', 
+                          color: '#666',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis'
+                        }}>
+                          {currentUser.email || authUser?.email || '-'}
+                        </div>
+                      </div>
                       <div style={{ 
-                        display: 'inline-block',
                         background: currentUser.roleName === 'Patron' ? '#28a745' : 
                                    currentUser.roleName === 'Yönetici' ? '#17a2b8' : '#6c757d',
                         color: 'white',
-                        padding: '3px 10px',
-                        borderRadius: '12px',
-                        fontSize: '11px',
-                        marginTop: '5px'
+                        padding: '4px 8px',
+                        borderRadius: '10px',
+                        fontSize: '10px',
+                        fontWeight: '600',
+                        flexShrink: 0
                       }}>
                         {currentUser.roleName || 'Kullanıcı'}
                       </div>
                     </div>
                     
-                    <div style={{ borderTop: '1px solid #eee', paddingTop: '15px' }}>
-                      <div style={{ marginBottom: '10px' }}>
-                        <div style={{ fontSize: '11px', color: '#888', marginBottom: '2px' }}>E-posta</div>
-                        <div style={{ fontSize: '13px' }}>{currentUser.email || authUser?.email || '-'}</div>
+                    {/* Detay bilgileri - sadece masaüstünde veya telefon/firma varsa göster */}
+                    {(!isMobile || currentUser.phone || currentUser.companyName) && (
+                      <div style={{ 
+                        display: 'grid',
+                        gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr',
+                        gap: isMobile ? '8px' : '10px',
+                        marginBottom: isMobile ? '12px' : '15px',
+                        fontSize: isMobile ? '12px' : '13px'
+                      }}>
+                        {currentUser.phone && (
+                          <div>
+                            <div style={{ fontSize: '10px', color: '#888', marginBottom: '2px' }}>Telefon</div>
+                            <div>{currentUser.phone}</div>
+                          </div>
+                        )}
+                        {currentUser.companyName && (
+                          <div>
+                            <div style={{ fontSize: '10px', color: '#888', marginBottom: '2px' }}>Firma</div>
+                            <div>{currentUser.companyName}</div>
+                          </div>
+                        )}
+                        {!isMobile && (
+                          <div>
+                            <div style={{ fontSize: '10px', color: '#888', marginBottom: '2px' }}>Durum</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{
+                                width: '8px',
+                                height: '8px',
+                                borderRadius: '50%',
+                                background: currentUser.isActive !== false ? '#28a745' : '#dc3545'
+                              }}></span>
+                              {currentUser.isActive !== false ? 'Aktif' : 'Pasif'}
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      {currentUser.phone && (
-                        <div style={{ marginBottom: '10px' }}>
-                          <div style={{ fontSize: '11px', color: '#888', marginBottom: '2px' }}>Telefon</div>
-                          <div style={{ fontSize: '13px' }}>{currentUser.phone}</div>
-                        </div>
-                      )}
-                      {currentUser.companyName && (
-                        <div style={{ marginBottom: '10px' }}>
-                          <div style={{ fontSize: '11px', color: '#888', marginBottom: '2px' }}>Firma</div>
-                          <div style={{ fontSize: '13px' }}>{currentUser.companyName}</div>
-                        </div>
-                      )}
-                      <div>
-                        <div style={{ fontSize: '11px', color: '#888', marginBottom: '2px' }}>Durum</div>
-                        <div style={{ fontSize: '13px' }}>
-                          <span style={{
-                            display: 'inline-block',
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            background: currentUser.isActive !== false ? '#28a745' : '#dc3545',
-                            marginRight: '6px'
-                          }}></span>
-                          {currentUser.isActive !== false ? 'Aktif' : 'Pasif'}
-                        </div>
-                      </div>
-                    </div>
+                    )}
 
                     <button
                       type="button"
@@ -235,14 +314,13 @@ function Layout({ children }) {
                       }}
                       style={{
                         width: '100%',
-                        marginTop: '15px',
-                        padding: '10px',
+                        padding: isMobile ? '12px' : '10px',
                         background: '#dc3545',
                         color: 'white',
                         border: 'none',
                         borderRadius: '8px',
                         cursor: 'pointer',
-                        fontSize: '13px',
+                        fontSize: isMobile ? '14px' : '13px',
                         fontWeight: '500'
                       }}
                     >
@@ -260,7 +338,13 @@ function Layout({ children }) {
       </nav>
 
       <div className="layout-body">
-        <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
+        {/* Mobil overlay */}
+        <div 
+          className={`sidebar-overlay ${mobileMenuOpen ? 'active' : ''}`}
+          onClick={() => setMobileMenuOpen(false)}
+        />
+        
+        <aside className={`sidebar ${sidebarOpen ? 'open' : ''} ${mobileMenuOpen ? 'mobile-open' : ''}`}>
           <button
             className="sidebar-toggle"
             onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -277,9 +361,10 @@ function Layout({ children }) {
                   key={item.path}
                   to={item.path}
                   className={`sidebar-item ${location.pathname === item.path ? 'active' : ''}`}
+                  onClick={() => setMobileMenuOpen(false)}
                 >
                   <span className="sidebar-icon">{item.icon}</span>
-                  {sidebarOpen && <span className="sidebar-label">{item.label}</span>}
+                  <span className="sidebar-label">{item.label}</span>
                 </Link>
               )
             })}

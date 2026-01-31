@@ -12,6 +12,15 @@
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .navbar-brand h1 {
@@ -30,17 +39,31 @@
   cursor: pointer;
 }
 
+/* Mobile menu toggle button */
+.mobile-menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 5px;
+  line-height: 1;
+}
+
 .layout-body {
   display: flex;
   flex: 1;
+  position: relative;
 }
 
 .sidebar {
   width: 250px;
   background-color: #34495e;
   color: white;
-  transition: width 0.3s;
+  transition: width 0.3s, transform 0.3s;
   position: relative;
+  min-height: calc(100vh - 70px);
 }
 
 .sidebar:not(.open) {
@@ -97,4 +120,97 @@
   padding: 20px;
   background-color: #f5f5f5;
   overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Sidebar overlay for mobile */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 199;
+}
+
+/* ==================== MOBILE STYLES ==================== */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 10px 15px;
+  }
+
+  .navbar-brand h1 {
+    font-size: 16px;
+  }
+
+  .mobile-menu-btn {
+    display: block;
+  }
+
+  .sidebar-toggle {
+    display: none;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 260px !important;
+    z-index: 200;
+    transform: translateX(-100%);
+    padding-top: 60px;
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-nav {
+    padding-top: 20px;
+  }
+
+  .sidebar-overlay.active {
+    display: block;
+  }
+
+  .main-content {
+    padding: 15px 10px;
+    width: 100%;
+  }
+
+  /* User info in navbar - simplified for mobile */
+  .navbar-user > div:first-child > div:first-child > div:first-of-type {
+    display: none;
+  }
+
+  .notifications {
+    font-size: 18px;
+  }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+  .navbar {
+    padding: 8px 10px;
+  }
+
+  .navbar-brand h1 {
+    font-size: 14px;
+  }
+
+  .main-content {
+    padding: 10px 8px;
+  }
+
+  .sidebar-item {
+    padding: 12px 15px;
+    font-size: 14px;
+  }
+
+  .sidebar-icon {
+    font-size: 18px;
+  }
 }

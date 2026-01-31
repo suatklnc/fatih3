@@ -277,17 +277,155 @@
   background: #f0f4ff;
 }
 
-/* Responsive */
+/* ==================== TABLET ==================== */
+@media (max-width: 992px) {
+  .modal-content {
+    max-width: 95%;
+  }
+
+  .modal-content.modal-large {
+    max-width: 95%;
+  }
+
+  .compare-cards {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 15px;
+  }
+}
+
+/* ==================== MOBILE ==================== */
 @media (max-width: 768px) {
+  .modal-overlay {
+    padding: 10px;
+  }
+
+  .modal-content {
+    max-width: 100%;
+    border-radius: 8px;
+  }
+
+  .modal-content.modal-large,
   .modal-content.modal-xlarge {
     max-width: 100%;
   }
 
+  .modal-header {
+    padding: 15px;
+    border-radius: 8px 8px 0 0;
+  }
+
+  .modal-header h2 {
+    font-size: 16px;
+  }
+
+  .modal-body {
+    padding: 15px;
+  }
+
   .compare-cards {
     grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .compare-card {
+    padding: 15px;
+  }
+
+  .compare-price {
+    font-size: 22px;
+  }
+
+  .compare-card h3 {
+    font-size: 16px;
   }
 
   .detail-grid {
     grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .detail-label {
+    font-size: 11px;
+  }
+
+  .detail-value {
+    font-size: 13px;
+  }
+
+  .items-table {
+    font-size: 12px;
+  }
+
+  .items-table th,
+  .items-table td {
+    padding: 8px 6px;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+  }
+
+  .modal-actions .btn {
+    width: 100%;
+  }
+
+  .quotation-item {
+    padding: 10px;
+  }
+
+  /* Quotations table */
+  .quotations table {
+    font-size: 11px;
+  }
+
+  .quotations table th,
+  .quotations table td {
+    padding: 8px 4px;
+  }
+}
+
+/* ==================== SMALL MOBILE ==================== */
+@media (max-width: 480px) {
+  .modal-header h2 {
+    font-size: 14px;
+  }
+
+  .modal-close {
+    width: 30px;
+    height: 30px;
+    font-size: 20px;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .compare-card {
+    padding: 12px;
+  }
+
+  .compare-price {
+    font-size: 20px;
+  }
+
+  .cheapest-badge,
+  .approved-badge {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+
+  .items-table {
+    font-size: 10px;
+  }
+
+  .items-table th,
+  .items-table td {
+    padding: 6px 4px;
+  }
+
+  .quotations table th,
+  .quotations table td {
+    padding: 6px 3px;
+    font-size: 10px;
   }
 }
