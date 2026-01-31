@@ -471,24 +471,25 @@ function MaterialRequests() {
             {/* Malzeme Tablosu */}
             <div style={{ 
               border: '1px solid #e0e0e0', 
-              borderRadius: '8px', 
+              borderRadius: '6px', 
               overflow: 'hidden',
-              marginBottom: '16px'
+              marginBottom: '12px'
             }}>
               {/* Tablo Başlığı */}
               <div style={{ 
                 display: 'grid', 
-                gridTemplateColumns: '1fr 100px 150px 50px', 
-                gap: '8px',
-                padding: '12px 16px',
+                gridTemplateColumns: '110px 1fr 70px 100px 40px', 
+                gap: '6px',
+                padding: '8px 12px',
                 background: '#1976d2',
                 color: 'white',
                 fontWeight: '600',
-                fontSize: '13px'
+                fontSize: '12px'
               }}>
-                <div>Malzeme</div>
+                <div>Kod</div>
+                <div>Malzeme Adı</div>
                 <div style={{ textAlign: 'center' }}>Miktar</div>
-                <div>Kalem Notu</div>
+                <div>Not</div>
                 <div></div>
               </div>
 
@@ -505,28 +506,48 @@ function MaterialRequests() {
                       ref={el => itemRefs.current[index] = el}
                       style={{ 
                         display: 'grid', 
-                        gridTemplateColumns: '1fr 100px 150px 50px', 
-                        gap: '8px',
-                        padding: '12px 16px',
+                        gridTemplateColumns: '110px 1fr 70px 100px 40px', 
+                        gap: '6px',
+                        padding: '6px 12px',
                         borderBottom: '1px solid #eee',
-                        alignItems: 'start',
+                        alignItems: 'center',
                         background: index % 2 === 0 ? '#fff' : '#fafafa'
                       }}
                     >
-                      {/* Malzeme Seçimi */}
+                      {/* Malzeme Kodu */}
+                      <div style={{ overflow: 'hidden' }}>
+                        {selectedMaterial ? (
+                          <span style={{ 
+                            fontSize: '10px', 
+                            color: '#1976d2', 
+                            fontWeight: '600',
+                            fontFamily: 'monospace',
+                            whiteSpace: 'nowrap',
+                            display: 'block',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis'
+                          }} title={selectedMaterial.code}>
+                            {selectedMaterial.code}
+                          </span>
+                        ) : (
+                          <span style={{ color: '#999', fontSize: '10px' }}>-</span>
+                        )}
+                      </div>
+
+                      {/* Malzeme Adı / Arama */}
                       <div style={{ position: 'relative' }}>
                         {selectedMaterial ? (
                           <div style={{ 
                             display: 'flex', 
                             alignItems: 'center', 
-                            gap: '8px',
-                            padding: '6px 10px',
+                            gap: '4px',
+                            padding: '4px 8px',
                             background: '#e8f5e9',
-                            borderRadius: '6px',
+                            borderRadius: '4px',
                             border: '1px solid #c8e6c9'
                           }}>
-                            <span style={{ flex: 1, fontSize: '13px', color: '#2e7d32', fontWeight: '500' }}>
-                              {selectedMaterial.code} - {selectedMaterial.name}
+                            <span style={{ flex: 1, fontSize: '12px', color: '#2e7d32', fontWeight: '500' }}>
+                              {selectedMaterial.name}
                             </span>
                             <button
                               type="button"
@@ -536,9 +557,9 @@ function MaterialRequests() {
                                 border: 'none', 
                                 color: '#999', 
                                 cursor: 'pointer',
-                                fontSize: '18px',
+                                fontSize: '16px',
                                 lineHeight: 1,
-                                padding: '0 4px'
+                                padding: '0 2px'
                               }}
                             >
                               ×
@@ -553,10 +574,10 @@ function MaterialRequests() {
                               onChange={(e) => handleMaterialSearch(index, e.target.value)}
                               style={{
                                 width: '100%',
-                                padding: '8px 10px',
+                                padding: '5px 8px',
                                 border: '1px solid #ddd',
-                                borderRadius: '6px',
-                                fontSize: '13px'
+                                borderRadius: '4px',
+                                fontSize: '12px'
                               }}
                             />
                             {/* Arama Sonuçları Dropdown */}
@@ -583,16 +604,15 @@ function MaterialRequests() {
                                       handleMaterialSearch(index, '')
                                     }}
                                     style={{
-                                      padding: '10px 12px',
+                                      padding: '6px 10px',
                                       cursor: 'pointer',
                                       borderBottom: '1px solid #f0f0f0',
-                                      fontSize: '13px'
+                                      fontSize: '12px'
                                     }}
                                     onMouseEnter={(e) => e.currentTarget.style.background = '#f5f5f5'}
                                     onMouseLeave={(e) => e.currentTarget.style.background = '#fff'}
                                   >
-                                    <div style={{ fontWeight: '500' }}>{m.code} - {m.name}</div>
-                                    {m.category && <div style={{ fontSize: '11px', color: '#888' }}>{m.category}</div>}
+                                    <div><span style={{ color: '#1976d2', fontFamily: 'monospace', fontSize: '10px' }}>{m.code}</span> {m.name}</div>
                                   </div>
                                 ))}
                               </div>
@@ -616,10 +636,10 @@ function MaterialRequests() {
                           onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)}
                           style={{
                             width: '100%',
-                            padding: '8px',
+                            padding: '5px',
                             border: '1px solid #ddd',
-                            borderRadius: '6px',
-                            fontSize: '13px',
+                            borderRadius: '4px',
+                            fontSize: '12px',
                             textAlign: 'center'
                           }}
                         />
@@ -634,10 +654,10 @@ function MaterialRequests() {
                           onChange={(e) => handleItemChange(index, 'notes', e.target.value)}
                           style={{
                             width: '100%',
-                            padding: '8px',
+                            padding: '5px 8px',
                             border: '1px solid #ddd',
-                            borderRadius: '6px',
-                            fontSize: '13px'
+                            borderRadius: '4px',
+                            fontSize: '12px'
                           }}
                         />
                       </div>
@@ -650,10 +670,10 @@ function MaterialRequests() {
                             onClick={() => handleRemoveItem(index)}
                             style={{ 
                               background: '#ffebee',
-                              border: '1px solid #ffcdd2',
+                              border: 'none',
                               color: '#c62828',
-                              borderRadius: '6px',
-                              padding: '6px 10px',
+                              borderRadius: '4px',
+                              padding: '4px 8px',
                               cursor: 'pointer',
                               fontSize: '14px'
                             }}
@@ -668,7 +688,7 @@ function MaterialRequests() {
               </div>
 
               {/* Kalem Ekle Butonu */}
-              <div style={{ padding: '12px 16px', background: '#f5f5f5', borderTop: '1px solid #eee' }}>
+              <div style={{ padding: '6px 12px', background: '#f5f5f5', borderTop: '1px solid #eee' }}>
                 <button 
                   type="button" 
                   onClick={handleAddItem}
@@ -676,32 +696,32 @@ function MaterialRequests() {
                     background: 'none',
                     border: '1px dashed #1976d2',
                     color: '#1976d2',
-                    padding: '8px 16px',
-                    borderRadius: '6px',
+                    padding: '5px 12px',
+                    borderRadius: '4px',
                     cursor: 'pointer',
-                    fontSize: '13px',
+                    fontSize: '12px',
                     fontWeight: '500',
                     width: '100%'
                   }}
                 >
-                  + Yeni Kalem Ekle
+                  + Kalem Ekle
                 </button>
               </div>
             </div>
 
             {/* Footer */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '13px', color: '#666' }}>
-                {formData.items.length} kalem • {formData.items.filter(i => i.materialId).length} malzeme seçili
+              <span style={{ fontSize: '12px', color: '#666' }}>
+                {formData.items.length} kalem • {formData.items.filter(i => i.materialId).length} seçili
               </span>
               <button 
                 type="submit" 
                 className="btn btn-primary"
                 style={{
-                  padding: '10px 24px',
-                  fontSize: '14px',
+                  padding: '8px 20px',
+                  fontSize: '13px',
                   fontWeight: '600',
-                  borderRadius: '6px'
+                  borderRadius: '4px'
                 }}
               >
                 Talep Oluştur
