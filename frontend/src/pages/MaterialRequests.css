@@ -1,3 +1,538 @@
+/* ==================== REQUEST FORM STYLES ==================== */
+.request-form-card {
+  padding: 16px !important;
+}
+
+.edit-mode-banner {
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background: #fff3e0;
+  border-radius: 6px;
+  border: 1px solid #ffcc80;
+  font-size: 12px;
+  color: #e65100;
+}
+
+.request-form-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+}
+
+.form-field label {
+  font-size: 11px;
+  color: #666;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.form-field select,
+.form-field input {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+}
+
+/* Material Items */
+.material-items-container {
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.material-item-row {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #eee;
+  align-items: center;
+  background: #fff;
+}
+
+.material-item-row:nth-child(even) {
+  background: #fafafa;
+}
+
+.material-select-area {
+  flex: 1;
+  position: relative;
+  min-width: 0;
+}
+
+.material-search-wrapper {
+  position: relative;
+}
+
+.material-search-input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.material-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  margin-top: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.material-dropdown-item {
+  padding: 8px 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.material-dropdown-item:hover {
+  background: #f5f5f5;
+}
+
+.dropdown-material-name {
+  display: block;
+  font-size: 13px;
+  color: #333;
+}
+
+.dropdown-material-code {
+  display: block;
+  font-size: 10px;
+  color: #1976d2;
+  font-family: monospace;
+}
+
+.selected-material {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: #e8f5e9;
+  border-radius: 6px;
+  border: 1px solid #c8e6c9;
+}
+
+.selected-material-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.selected-material-name {
+  display: block;
+  font-size: 13px;
+  color: #2e7d32;
+  font-weight: 500;
+}
+
+.selected-material-code {
+  display: block;
+  font-size: 10px;
+  color: #666;
+  font-family: monospace;
+}
+
+.btn-clear-material {
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0 4px;
+}
+
+.material-item-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.quantity-input {
+  width: 70px;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.btn-remove-item {
+  background: #ffebee;
+  border: none;
+  color: #c62828;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn-add-item {
+  width: 100%;
+  background: #f5f5f5;
+  border: none;
+  border-top: 1px solid #eee;
+  color: #1976d2;
+  padding: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.no-results {
+  font-size: 11px;
+  color: #999;
+  margin-top: 4px;
+  padding: 4px;
+}
+
+.request-form-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.item-count {
+  font-size: 12px;
+  color: #666;
+}
+
+.btn-submit {
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ==================== REQUEST FORM MOBILE ==================== */
+@media (max-width: 768px) {
+  .request-form-card {
+    padding: 10px !important;
+  }
+
+  .edit-mode-banner {
+    padding: 6px 10px;
+    font-size: 11px;
+    margin-bottom: 10px;
+  }
+
+  .request-form-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0;
+    margin-bottom: 12px;
+    background: none;
+    border-radius: 0;
+  }
+
+  .form-field {
+    flex: 1;
+    min-width: 100px;
+  }
+
+  .form-field-note {
+    flex: 100%;
+  }
+
+  .form-field label {
+    font-size: 10px;
+    margin-bottom: 2px;
+  }
+
+  .form-field select,
+  .form-field input {
+    padding: 8px;
+    font-size: 14px;
+    border-radius: 4px;
+  }
+
+  .material-items-container {
+    border-radius: 4px;
+    margin-bottom: 10px;
+  }
+
+  .material-item-row {
+    padding: 8px;
+    gap: 6px;
+  }
+
+  .material-search-input {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  .quantity-input {
+    width: 55px;
+    padding: 8px 4px;
+    font-size: 14px;
+  }
+
+  .btn-remove-item {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  .btn-add-item {
+    padding: 8px;
+    font-size: 12px;
+  }
+
+  .selected-material {
+    padding: 6px 8px;
+  }
+
+  .selected-material-name {
+    font-size: 12px;
+  }
+
+  .selected-material-code {
+    font-size: 9px;
+  }
+
+  .btn-clear-material {
+    font-size: 16px;
+  }
+
+  .request-form-footer {
+    padding-top: 8px;
+  }
+
+  .item-count {
+    font-size: 11px;
+  }
+
+  .btn-submit {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  .material-dropdown {
+    max-height: 150px;
+  }
+
+  .material-dropdown-item {
+    padding: 6px 8px;
+  }
+
+  .dropdown-material-name {
+    font-size: 12px;
+  }
+
+  .dropdown-material-code {
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 480px) {
+  .request-form-card {
+    padding: 8px !important;
+  }
+
+  .request-form-header {
+    gap: 6px;
+  }
+
+  .form-field {
+    min-width: 80px;
+  }
+
+  .form-field select,
+  .form-field input {
+    padding: 6px;
+    font-size: 13px;
+  }
+
+  .material-item-row {
+    flex-wrap: wrap;
+    padding: 6px;
+  }
+
+  .material-select-area {
+    width: 100%;
+    flex: none;
+  }
+
+  .material-item-actions {
+    width: 100%;
+    justify-content: flex-end;
+    margin-top: 4px;
+  }
+
+  .quantity-input {
+    width: 60px;
+  }
+
+  .btn-submit {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+}
+
+/* ==================== REQUESTS TABLE STYLES ==================== */
+.requests-table {
+  width: 100%;
+}
+
+.request-info-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.request-project {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.request-number {
+  font-size: 11px;
+  color: #666;
+  font-family: monospace;
+}
+
+.col-status .badge {
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.request-actions {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.request-actions .btn-icon {
+  padding: 5px 8px;
+  font-size: 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.request-actions .btn-edit {
+  background: #ff9800;
+  color: white;
+}
+
+.request-actions .btn-approve {
+  background: #4caf50;
+  color: white;
+}
+
+.request-actions .btn-reject {
+  background: #f44336;
+  color: white;
+}
+
+.request-actions .btn-send {
+  background: #2196f3;
+  color: white;
+}
+
+.request-actions .btn-supplier {
+  background: #9c27b0;
+  color: white;
+}
+
+.request-actions .btn-delete {
+  background: #f44336;
+  color: white;
+}
+
+.request-actions .btn-icon-text {
+  display: none;
+}
+
+.request-actions .btn-full-text {
+  display: inline;
+}
+
+/* Requests table mobile */
+@media (max-width: 768px) {
+  .requests-card .hide-mobile {
+    display: none !important;
+  }
+
+  .requests-table th,
+  .requests-table td {
+    padding: 10px 6px;
+  }
+
+  .request-project {
+    font-size: 13px;
+  }
+
+  .request-number {
+    font-size: 10px;
+  }
+
+  .col-status .badge {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+
+  .request-actions {
+    flex-direction: row;
+    gap: 3px;
+  }
+
+  .request-actions .btn-icon {
+    padding: 6px 8px;
+    font-size: 14px;
+    min-width: 32px;
+  }
+
+  .request-actions .btn-icon-text {
+    display: inline;
+  }
+
+  .request-actions .btn-full-text {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .requests-table th,
+  .requests-table td {
+    padding: 8px 4px;
+  }
+
+  .request-project {
+    font-size: 12px;
+  }
+
+  .request-number {
+    font-size: 9px;
+  }
+
+  .col-status .badge {
+    font-size: 9px;
+    padding: 2px 4px;
+  }
+
+  .request-actions .btn-icon {
+    padding: 5px 6px;
+    font-size: 12px;
+    min-width: 28px;
+  }
+}
+
+/* ==================== OLD STYLES ==================== */
 .request-item {
   border: 1px solid #ddd;
   border-radius: 4px;

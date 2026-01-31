@@ -174,52 +174,65 @@ function Suppliers() {
         </div>
       )}
 
-      <div className="card">
-        <table>
-          <thead>
-            <tr>
-              <th>Tedarikçi Adı</th>
-              <th>İlgili Kişi</th>
-              <th>Telefon</th>
-              <th>E-posta</th>
-              <th>İşlemler</th>
-            </tr>
-          </thead>
-          <tbody>
-            {suppliers.length === 0 ? (
+      <div className="card suppliers-card">
+        <div className="table-responsive">
+          <table className="suppliers-table">
+            <thead>
               <tr>
-                <td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>
-                  Henüz tedarikçi eklenmemiş
-                </td>
+                <th className="col-supplier-name">Tedarikçi</th>
+                <th className="col-supplier-phone">Telefon</th>
+                <th className="col-supplier-actions">İşlem</th>
               </tr>
-            ) : (
-              suppliers.map((supplier) => (
-                <tr key={supplier.id}>
-                  <td>{supplier.name}</td>
-                  <td>{supplier.contactPerson || '-'}</td>
-                  <td>{supplier.phone || '-'}</td>
-                  <td>{supplier.email || '-'}</td>
-                  <td>
-                    <button
-                      className="btn"
-                      onClick={() => handleEdit(supplier)}
-                      style={{ fontSize: '12px', padding: '5px 10px', marginRight: '5px' }}
-                    >
-                      Düzenle
-                    </button>
-                    <button
-                      className="btn btn-danger"
-                      onClick={() => handleDelete(supplier.id)}
-                      style={{ fontSize: '12px', padding: '5px 10px' }}
-                    >
-                      Sil
-                    </button>
+            </thead>
+            <tbody>
+              {suppliers.length === 0 ? (
+                <tr>
+                  <td colSpan="3" style={{ textAlign: 'center', padding: '20px' }}>
+                    Henüz tedarikçi eklenmemiş
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                suppliers.map((supplier) => (
+                  <tr key={supplier.id}>
+                    <td className="col-supplier-name">
+                      <div className="supplier-name-cell">
+                        <span className="supplier-name">{supplier.name}</span>
+                        {supplier.contactPerson && (
+                          <span className="supplier-contact">{supplier.contactPerson}</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="col-supplier-phone">
+                      {supplier.phone || '-'}
+                    </td>
+                    <td className="col-supplier-actions">
+                      <div className="action-buttons-compact">
+                        <button
+                          type="button"
+                          className="btn btn-icon btn-edit"
+                          onClick={() => handleEdit(supplier)}
+                          title="Düzenle"
+                        >
+                          <span className="btn-icon-text">✏️</span>
+                          <span className="btn-full-text">Düzenle</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-icon btn-delete"
+                          onClick={() => handleDelete(supplier.id)}
+                          title="Sil"
+                        >
+                          <span className="btn-icon-text">🗑️</span>
+                          <span className="btn-full-text">Sil</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   )

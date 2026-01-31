@@ -186,65 +186,74 @@ function Companies() {
                 </div>
             )}
 
-            <div className="card">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Firma Adı</th>
-                            <th>Vergi No</th>
-                            <th>Telefon</th>
-                            <th>E-posta</th>
-                            <th>Personel</th>
-                            <th>İşlemler</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {companies.length === 0 ? (
+            <div className="card companies-card">
+                <div className="table-responsive">
+                    <table className="companies-table">
+                        <thead>
                             <tr>
-                                <td colSpan="6" style={{ textAlign: 'center', padding: '20px' }}>
-                                    Henüz firma eklenmemiş
-                                </td>
+                                <th className="col-company-name">Firma Adı</th>
+                                <th className="col-tax hide-mobile">Vergi No</th>
+                                <th className="col-phone hide-mobile">Telefon</th>
+                                <th className="col-email hide-mobile">E-posta</th>
+                                <th className="col-staff">👥</th>
+                                <th className="col-company-actions">İşlem</th>
                             </tr>
-                        ) : (
-                            companies.map((company) => {
-                                const count = getUserCountByCompany(company.id)
-                                return (
-                                    <tr key={company.id}>
-                                        <td>{company.name}</td>
-                                        <td>{company.taxNumber || '-'}</td>
-                                        <td>{company.phone || '-'}</td>
-                                        <td>{company.email || '-'}</td>
-                                        <td>
-                                            {count > 0 ? (
-                                                <span title="Bu firmaya bağlı kullanıcı sayısı">{count} kişi</span>
-                                            ) : (
-                                                '-'
-                                            )}
-                                        </td>
-                                        <td>
-                                            <button
-                                                type="button"
-                                                className="btn"
-                                                onClick={() => handleEdit(company)}
-                                                style={{ fontSize: '12px', padding: '5px 10px', marginRight: '5px' }}
-                                            >
-                                                Düzenle
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className="btn btn-danger"
-                                                onClick={() => handleDelete(company)}
-                                                style={{ fontSize: '12px', padding: '5px 10px' }}
-                                            >
-                                                Sil
-                                            </button>
-                                        </td>
-                                    </tr>
-                                )
-                            })
-                        )}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {companies.length === 0 ? (
+                                <tr>
+                                    <td colSpan="6" style={{ textAlign: 'center', padding: '20px' }}>
+                                        Henüz firma eklenmemiş
+                                    </td>
+                                </tr>
+                            ) : (
+                                companies.map((company) => {
+                                    const count = getUserCountByCompany(company.id)
+                                    return (
+                                        <tr key={company.id}>
+                                            <td className="col-company-name">
+                                                <div className="company-name-cell">
+                                                    <span className="company-name">{company.name}</span>
+                                                    <span className="company-info-mobile">
+                                                        {company.phone && <span>📞 {company.phone}</span>}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="col-tax hide-mobile">{company.taxNumber || '-'}</td>
+                                            <td className="col-phone hide-mobile">{company.phone || '-'}</td>
+                                            <td className="col-email hide-mobile">{company.email || '-'}</td>
+                                            <td className="col-staff" title="Personel sayısı">
+                                                {count > 0 ? count : '-'}
+                                            </td>
+                                            <td className="col-company-actions">
+                                                <div className="action-buttons-compact">
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-icon btn-edit"
+                                                        onClick={() => handleEdit(company)}
+                                                        title="Düzenle"
+                                                    >
+                                                        <span className="btn-icon-text">✏️</span>
+                                                        <span className="btn-full-text">Düzenle</span>
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-icon btn-delete"
+                                                        onClick={() => handleDelete(company)}
+                                                        title="Sil"
+                                                    >
+                                                        <span className="btn-icon-text">🗑️</span>
+                                                        <span className="btn-full-text">Sil</span>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )
+                                })
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     )

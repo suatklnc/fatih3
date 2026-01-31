@@ -480,38 +480,21 @@ function MaterialRequests() {
       </div>
 
       {showForm && (
-        <div className="card" style={{ padding: '20px' }}>
+        <div className="card request-form-card">
           {editMode && (
-            <div style={{ 
-              marginBottom: '15px', 
-              padding: '10px 15px', 
-              background: '#fff3e0', 
-              borderRadius: '6px',
-              border: '1px solid #ffcc80',
-              fontSize: '13px',
-              color: '#e65100'
-            }}>
-              📝 Düzenleme Modu - Talep güncelleniyor
+            <div className="edit-mode-banner">
+              📝 Düzenleme Modu
             </div>
           )}
           <form onSubmit={handleSubmit}>
-            {/* Üst Bilgiler - Kompakt Grid */}
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', 
-              gap: '12px',
-              marginBottom: '20px',
-              padding: '16px',
-              background: '#f8f9fa',
-              borderRadius: '8px'
-            }}>
-              <div>
-                <label style={{ fontSize: '12px', color: '#666', display: 'block', marginBottom: '4px' }}>Proje *</label>
+            {/* Üst Bilgiler - Kompakt */}
+            <div className="request-form-header">
+              <div className="form-field">
+                <label>Proje *</label>
                 <select
                   required
                   value={formData.projectId}
                   onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
-                  style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '14px' }}
                 >
                   <option value="">Seçiniz</option>
                   {projects.map((p) => (
@@ -519,284 +502,131 @@ function MaterialRequests() {
                   ))}
                 </select>
               </div>
-              <div>
-                <label style={{ fontSize: '12px', color: '#666', display: 'block', marginBottom: '4px' }}>Gerekli Tarih</label>
+              <div className="form-field">
+                <label>Tarih</label>
                 <input
                   type="date"
                   value={formData.requiredDate}
                   onChange={(e) => setFormData({ ...formData, requiredDate: e.target.value })}
-                  style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '14px' }}
                 />
               </div>
-              <div>
-                <label style={{ fontSize: '12px', color: '#666', display: 'block', marginBottom: '4px' }}>Not</label>
+              <div className="form-field form-field-note">
+                <label>Not</label>
                 <input
                   type="text"
                   placeholder="Talep notu..."
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '14px' }}
                 />
               </div>
             </div>
 
-            {/* Malzeme Tablosu */}
-            <div style={{ 
-              border: '1px solid #e0e0e0', 
-              borderRadius: '6px', 
-              overflow: 'hidden',
-              marginBottom: '12px'
-            }}>
-              {/* Tablo Başlığı */}
-              <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: '110px 1fr 70px 100px 40px', 
-                gap: '6px',
-                padding: '8px 12px',
-                background: '#1976d2',
-                color: 'white',
-                fontWeight: '600',
-                fontSize: '12px'
-              }}>
-                <div>Kod</div>
-                <div>Malzeme Adı</div>
-                <div style={{ textAlign: 'center' }}>Miktar</div>
-                <div>Not</div>
-                <div></div>
-              </div>
-
-              {/* Malzeme Satırları */}
-              <div>
-                {formData.items.map((item, index) => {
-                  const filteredMats = getFilteredMaterialsForItem(index)
-                  const selectedMaterial = item.materialId ? materials.find(m => m.id === item.materialId) : null
-                  const searchQuery = (materialSearchQueries[index] || '').trim()
-                  
-                  return (
-                    <div 
-                      key={index}
-                      ref={el => itemRefs.current[index] = el}
-                      style={{ 
-                        display: 'grid', 
-                        gridTemplateColumns: '110px 1fr 70px 100px 40px', 
-                        gap: '6px',
-                        padding: '6px 12px',
-                        borderBottom: '1px solid #eee',
-                        alignItems: 'center',
-                        background: index % 2 === 0 ? '#fff' : '#fafafa'
-                      }}
-                    >
-                      {/* Malzeme Kodu */}
-                      <div style={{ overflow: 'hidden' }}>
-                        {selectedMaterial ? (
-                          <span style={{ 
-                            fontSize: '10px', 
-                            color: '#1976d2', 
-                            fontWeight: '600',
-                            fontFamily: 'monospace',
-                            whiteSpace: 'nowrap',
-                            display: 'block',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis'
-                          }} title={selectedMaterial.code}>
-                            {selectedMaterial.code}
-                          </span>
-                        ) : (
-                          <span style={{ color: '#999', fontSize: '10px' }}>-</span>
-                        )}
-                      </div>
-
-                      {/* Malzeme Adı / Arama */}
-                      <div style={{ position: 'relative' }}>
-                        {selectedMaterial ? (
-                          <div style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '4px',
-                            padding: '4px 8px',
-                            background: '#e8f5e9',
-                            borderRadius: '4px',
-                            border: '1px solid #c8e6c9'
-                          }}>
-                            <span style={{ flex: 1, fontSize: '12px', color: '#2e7d32', fontWeight: '500' }}>
-                              {selectedMaterial.name}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => handleItemChange(index, 'materialId', '')}
-                              style={{ 
-                                background: 'none', 
-                                border: 'none', 
-                                color: '#999', 
-                                cursor: 'pointer',
-                                fontSize: '16px',
-                                lineHeight: 1,
-                                padding: '0 2px'
-                              }}
-                            >
-                              ×
-                            </button>
+            {/* Malzeme Listesi */}
+            <div className="material-items-container">
+              {formData.items.map((item, index) => {
+                const filteredMats = getFilteredMaterialsForItem(index)
+                const selectedMaterial = item.materialId ? materials.find(m => m.id === item.materialId) : null
+                const searchQuery = (materialSearchQueries[index] || '').trim()
+                
+                return (
+                  <div 
+                    key={index}
+                    ref={el => itemRefs.current[index] = el}
+                    className="material-item-row"
+                  >
+                    {/* Malzeme Arama/Seçim */}
+                    <div className="material-select-area">
+                      {selectedMaterial ? (
+                        <div className="selected-material">
+                          <div className="selected-material-info">
+                            <span className="selected-material-name">{selectedMaterial.name}</span>
+                            <span className="selected-material-code">{selectedMaterial.code}</span>
                           </div>
-                        ) : (
-                          <>
-                            <input
-                              type="text"
-                              placeholder="🔍 Ara..."
-                              value={materialSearchQueries[index] || ''}
-                              onChange={(e) => handleMaterialSearch(index, e.target.value)}
-                              style={{
-                                width: '100%',
-                                padding: '5px 8px',
-                                border: '1px solid #ddd',
-                                borderRadius: '4px',
-                                fontSize: '12px'
-                              }}
-                            />
-                            {/* Arama Sonuçları Dropdown */}
-                            {searchQuery.length >= 2 && filteredMats.length > 0 && (
-                              <div style={{ 
-                                position: 'absolute',
-                                top: '100%',
-                                left: 0,
-                                right: 0,
-                                zIndex: 9999,
-                                border: '1px solid #ddd', 
-                                borderRadius: '6px', 
-                                background: '#fff',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                                marginTop: '4px',
-                                maxHeight: '200px',
-                                overflowY: 'auto'
-                              }}>
-                                {filteredMats.map((m) => (
-                                  <div
-                                    key={m.id}
-                                    onClick={() => {
-                                      handleItemChange(index, 'materialId', m.id)
-                                      handleMaterialSearch(index, '')
-                                    }}
-                                    style={{
-                                      padding: '6px 10px',
-                                      cursor: 'pointer',
-                                      borderBottom: '1px solid #f0f0f0',
-                                      fontSize: '12px'
-                                    }}
-                                    onMouseEnter={(e) => e.currentTarget.style.background = '#f5f5f5'}
-                                    onMouseLeave={(e) => e.currentTarget.style.background = '#fff'}
-                                  >
-                                    <div><span style={{ color: '#1976d2', fontFamily: 'monospace', fontSize: '10px' }}>{m.code}</span> {m.name}</div>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                            {searchQuery.length >= 2 && filteredMats.length === 0 && (
-                              <div style={{ fontSize: '11px', color: '#999', marginTop: '4px' }}>Sonuç yok</div>
-                            )}
-                          </>
-                        )}
-                        <input type="hidden" required value={item.materialId} />
-                      </div>
-
-                      {/* Miktar */}
-                      <div>
-                        <input
-                          type="number"
-                          required
-                          step="0.01"
-                          min="0.01"
-                          value={item.quantity || ''}
-                          onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)}
-                          style={{
-                            width: '100%',
-                            padding: '5px',
-                            border: '1px solid #ddd',
-                            borderRadius: '4px',
-                            fontSize: '12px',
-                            textAlign: 'center'
-                          }}
-                        />
-                      </div>
-
-                      {/* Kalem Notu */}
-                      <div>
-                        <input
-                          type="text"
-                          placeholder="Not..."
-                          value={item.notes}
-                          onChange={(e) => handleItemChange(index, 'notes', e.target.value)}
-                          style={{
-                            width: '100%',
-                            padding: '5px 8px',
-                            border: '1px solid #ddd',
-                            borderRadius: '4px',
-                            fontSize: '12px'
-                          }}
-                        />
-                      </div>
-
-                      {/* Sil Butonu */}
-                      <div style={{ textAlign: 'center' }}>
-                        {formData.items.length > 1 && (
                           <button
                             type="button"
-                            onClick={() => handleRemoveItem(index)}
-                            style={{ 
-                              background: '#ffebee',
-                              border: 'none',
-                              color: '#c62828',
-                              borderRadius: '4px',
-                              padding: '4px 8px',
-                              cursor: 'pointer',
-                              fontSize: '14px'
-                            }}
+                            onClick={() => handleItemChange(index, 'materialId', '')}
+                            className="btn-clear-material"
                           >
-                            🗑
+                            ×
                           </button>
-                        )}
-                      </div>
+                        </div>
+                      ) : (
+                        <div className="material-search-wrapper">
+                          <input
+                            type="text"
+                            placeholder="🔍 Malzeme ara..."
+                            value={materialSearchQueries[index] || ''}
+                            onChange={(e) => handleMaterialSearch(index, e.target.value)}
+                            className="material-search-input"
+                          />
+                          {searchQuery.length >= 2 && filteredMats.length > 0 && (
+                            <div className="material-dropdown">
+                              {filteredMats.map((m) => (
+                                <div
+                                  key={m.id}
+                                  onClick={() => {
+                                    handleItemChange(index, 'materialId', m.id)
+                                    handleMaterialSearch(index, '')
+                                  }}
+                                  className="material-dropdown-item"
+                                >
+                                  <span className="dropdown-material-name">{m.name}</span>
+                                  <span className="dropdown-material-code">{m.code}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {searchQuery.length >= 2 && filteredMats.length === 0 && (
+                            <div className="no-results">Sonuç yok</div>
+                          )}
+                        </div>
+                      )}
+                      <input type="hidden" required value={item.materialId} />
                     </div>
-                  )
-                })}
-              </div>
 
-              {/* Kalem Ekle Butonu */}
-              <div style={{ padding: '6px 12px', background: '#f5f5f5', borderTop: '1px solid #eee' }}>
-                <button 
-                  type="button" 
-                  onClick={handleAddItem}
-                  style={{
-                    background: 'none',
-                    border: '1px dashed #1976d2',
-                    color: '#1976d2',
-                    padding: '5px 12px',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '12px',
-                    fontWeight: '500',
-                    width: '100%'
-                  }}
-                >
-                  + Kalem Ekle
-                </button>
-              </div>
+                    {/* Miktar ve Sil */}
+                    <div className="material-item-actions">
+                      <input
+                        type="number"
+                        required
+                        step="0.01"
+                        min="0.01"
+                        placeholder="Adet"
+                        value={item.quantity || ''}
+                        onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)}
+                        className="quantity-input"
+                      />
+                      {formData.items.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveItem(index)}
+                          className="btn-remove-item"
+                        >
+                          🗑
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+
+              {/* Kalem Ekle */}
+              <button 
+                type="button" 
+                onClick={handleAddItem}
+                className="btn-add-item"
+              >
+                + Kalem Ekle
+              </button>
             </div>
 
             {/* Footer */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '12px', color: '#666' }}>
-                {formData.items.length} kalem • {formData.items.filter(i => i.materialId).length} seçili
+            <div className="request-form-footer">
+              <span className="item-count">
+                {formData.items.filter(i => i.materialId).length}/{formData.items.length} malzeme
               </span>
-              <button 
-                type="submit" 
-                className="btn btn-primary"
-                style={{
-                  padding: '8px 20px',
-                  fontSize: '13px',
-                  fontWeight: '600',
-                  borderRadius: '4px'
-                }}
-              >
-                {editMode ? 'Güncelle' : 'Talep Oluştur'}
+              <button type="submit" className="btn btn-primary btn-submit">
+                {editMode ? 'Güncelle' : 'Oluştur'}
               </button>
             </div>
           </form>
@@ -804,96 +634,109 @@ function MaterialRequests() {
       )}
 
       {!showForm && (
-      <div className="card">
-        <table>
-          <thead>
-            <tr>
-              <th>Talep No</th>
-              <th>Proje</th>
-              <th>Durum</th>
-              <th>Tarih</th>
-              <th>İşlemler</th>
-            </tr>
-          </thead>
-          <tbody>
-            {displayRequests.length === 0 ? (
+      <div className="card requests-card">
+        <div className="table-responsive">
+          <table className="requests-table">
+            <thead>
               <tr>
-                <td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>
-                  {isPurchasingOnly ? 'Onaylanmış talep bulunmuyor.' : 'Henüz talep oluşturulmamış'}
-                </td>
+                <th className="col-request-info">Talep</th>
+                <th className="col-status">Durum</th>
+                <th className="col-date hide-mobile">Tarih</th>
+                <th className="col-request-actions">İşlem</th>
               </tr>
-            ) : (
-              displayRequests.map((request) => (
-                <tr key={request.id} style={{ cursor: 'pointer' }} onClick={() => handleViewDetail(request)}>
-                  <td>{request.requestNumber}</td>
-                  <td>{getProjectName(request.projectId)}</td>
-                  <td>
-                    <span className={`badge ${getStatusBadge(request.status)} `}>
-                      {getStatusText(request.status)}
-                    </span>
-                  </td>
-                  <td>{new Date(request.requestDate).toLocaleDateString('tr-TR')}</td>
-                  <td onClick={(e) => e.stopPropagation()}>
-                    {request.status === 'pending' && (
-                      <button
-                        className="btn"
-                        onClick={() => handleEdit(request)}
-                        style={{ fontSize: '12px', padding: '5px 10px', marginRight: '5px', background: '#ff9800', color: 'white' }}
-                      >
-                        Düzenle
-                      </button>
-                    )}
-                    {request.status === 'pending' && isPatronOrAdmin && (
-                      <>
-                        <button
-                          className="btn btn-success"
-                          onClick={() => handleStatusChange(request.id, 'approved')}
-                          style={{ fontSize: '12px', padding: '5px 10px', marginRight: '5px' }}
-                        >
-                          Onayla
-                        </button>
-                        <button
-                          className="btn btn-danger"
-                          onClick={() => handleStatusChange(request.id, 'rejected')}
-                          style={{ fontSize: '12px', padding: '5px 10px' }}
-                        >
-                          Reddet
-                        </button>
-                      </>
-                    )}
-                    {request.status === 'approved' && isPatronOrAdmin && (
-                      <button
-                        className="btn btn-primary"
-                        onClick={() => handleSendToPurchasing(request.id)}
-                        style={{ fontSize: '12px', padding: '5px 10px', marginRight: '5px' }}
-                      >
-                        Satın Almaya Gönder
-                      </button>
-                    )}
-                    {(request.status === 'approved' || request.status === 'sent_to_purchasing') && isPurchasing && (
-                      <button
-                        className="btn btn-info"
-                        onClick={() => handleSendToSuppliers(request.id)}
-                        style={{ fontSize: '12px', padding: '5px 10px', marginRight: '5px' }}
-                      >
-                        Tedarikçilere Gönder
-                      </button>
-                    )}
-                    {isPatronOrAdmin && (
-                      <button
-                        className="btn btn-danger"
-                        onClick={() => handleDelete(request.id)}
-                        style={{ fontSize: '12px', padding: '5px 10px', marginLeft: '5px' }}
-                      >
-                        Sil
-                      </button>
-                    )}
+            </thead>
+            <tbody>
+              {displayRequests.length === 0 ? (
+                <tr>
+                  <td colSpan="4" style={{ textAlign: 'center', padding: '20px' }}>
+                    {isPurchasingOnly ? 'Onaylanmış talep bulunmuyor.' : 'Henüz talep oluşturulmamış'}
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                displayRequests.map((request) => (
+                  <tr key={request.id} style={{ cursor: 'pointer' }} onClick={() => handleViewDetail(request)}>
+                    <td className="col-request-info">
+                      <div className="request-info-cell">
+                        <span className="request-project">{getProjectName(request.projectId)}</span>
+                        <span className="request-number">{request.requestNumber}</span>
+                      </div>
+                    </td>
+                    <td className="col-status">
+                      <span className={`badge ${getStatusBadge(request.status)}`}>
+                        {getStatusText(request.status)}
+                      </span>
+                    </td>
+                    <td className="col-date hide-mobile">{new Date(request.requestDate).toLocaleDateString('tr-TR')}</td>
+                    <td className="col-request-actions" onClick={(e) => e.stopPropagation()}>
+                      <div className="request-actions">
+                        {request.status === 'pending' && (
+                          <button
+                            className="btn btn-icon btn-edit"
+                            onClick={() => handleEdit(request)}
+                            title="Düzenle"
+                          >
+                            <span className="btn-icon-text">✏️</span>
+                            <span className="btn-full-text">Düzenle</span>
+                          </button>
+                        )}
+                        {request.status === 'pending' && isPatronOrAdmin && (
+                          <>
+                            <button
+                              className="btn btn-icon btn-approve"
+                              onClick={() => handleStatusChange(request.id, 'approved')}
+                              title="Onayla"
+                            >
+                              <span className="btn-icon-text">✓</span>
+                              <span className="btn-full-text">Onayla</span>
+                            </button>
+                            <button
+                              className="btn btn-icon btn-reject"
+                              onClick={() => handleStatusChange(request.id, 'rejected')}
+                              title="Reddet"
+                            >
+                              <span className="btn-icon-text">✗</span>
+                              <span className="btn-full-text">Reddet</span>
+                            </button>
+                          </>
+                        )}
+                        {request.status === 'approved' && isPatronOrAdmin && (
+                          <button
+                            className="btn btn-icon btn-send"
+                            onClick={() => handleSendToPurchasing(request.id)}
+                            title="Satın Almaya Gönder"
+                          >
+                            <span className="btn-icon-text">📤</span>
+                            <span className="btn-full-text">Satın Al</span>
+                          </button>
+                        )}
+                        {(request.status === 'approved' || request.status === 'sent_to_purchasing') && isPurchasing && (
+                          <button
+                            className="btn btn-icon btn-supplier"
+                            onClick={() => handleSendToSuppliers(request.id)}
+                            title="Tedarikçilere Gönder"
+                          >
+                            <span className="btn-icon-text">📧</span>
+                            <span className="btn-full-text">Tedarikçi</span>
+                          </button>
+                        )}
+                        {isPatronOrAdmin && (
+                          <button
+                            className="btn btn-icon btn-delete"
+                            onClick={() => handleDelete(request.id)}
+                            title="Sil"
+                          >
+                            <span className="btn-icon-text">🗑️</span>
+                            <span className="btn-full-text">Sil</span>
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
       )}
     </div>

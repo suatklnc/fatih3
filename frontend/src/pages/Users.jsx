@@ -133,10 +133,6 @@ function Users() {
                 </button>
             </div>
 
-            <div className="card" style={{ marginBottom: '16px', padding: '12px 16px', background: '#f0f7ff', border: '1px solid #cce5ff', fontSize: '14px' }}>
-                Giriş yapmış veya kayıt olmuş tüm hesaplar burada listelenir. <strong>Yetki atanmamış</strong> hesaplara &quot;Yetki Ver&quot; ile rol ve firma atayabilir; yetkili kullanıcıları düzenleyebilir veya silebilirsiniz.
-            </div>
-
             {filterCompanyName && (
                 <div className="card" style={{ marginBottom: '16px', background: '#fff8e6', border: '1px solid #e6d9b8' }}>
                     <strong>Firma filtresi:</strong> "{filterCompanyName}" firmasına bağlı kullanıcılar listeleniyor.
@@ -232,88 +228,104 @@ function Users() {
                 </div>
             )}
 
-            <div className="card">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Ad Soyad</th>
-                            <th>E-posta</th>
-                            <th>Rol</th>
-                            <th>Firma</th>
-                            <th>Durum</th>
-                            <th>İşlemler</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredUsers.length === 0 ? (
+            <div className="card users-card">
+                <div className="table-responsive">
+                    <table className="users-table">
+                        <thead>
                             <tr>
-                                <td colSpan="6" style={{ textAlign: 'center', padding: '20px' }}>
-                                    {companyIdFromUrl ? 'Bu firmaya bağlı kullanıcı yok.' : 'Henüz kullanıcı eklenmemiş'}
-                                </td>
+                                <th className="col-user-name">Kullanıcı</th>
+                                <th className="col-email hide-mobile">E-posta</th>
+                                <th className="col-role">Rol</th>
+                                <th className="col-company hide-mobile">Firma</th>
+                                <th className="col-status hide-mobile">Durum</th>
+                                <th className="col-user-actions">İşlem</th>
                             </tr>
-                        ) : (
-                            filteredUsers.map((user) => (
-                                <tr key={user.id || user.authUserId || user.email} style={user.hasProfile === false ? { background: '#f9f9f9' } : undefined}>
-                                    <td>{user.fullName || '-'}</td>
-                                    <td>{user.email}</td>
-                                    <td>{user.hasProfile === false ? '—' : getRoleName(user.roleId)}</td>
-                                    <td>{getCompanyName(user.companyId)}</td>
-                                    <td>
-                                        {user.hasProfile === false ? (
-                                            <span style={{ color: '#888', fontSize: '13px' }}>Yetki atanmamış</span>
-                                        ) : (
-                                            <span className={`status-badge ${user.isActive ? 'status-active' : 'status-cancelled'}`}>
-                                                {user.isActive ? 'Aktif' : 'Pasif'}
-                                            </span>
-                                        )}
-                                    </td>
-                                    <td>
-                                        {user.hasProfile === false ? (
-                                            <button
-                                                type="button"
-                                                className="btn btn-primary"
-                                                onClick={() => {
-                                                    setFormData({
-                                                        email: user.email,
-                                                        fullName: user.fullName || user.email,
-                                                        roleId: '',
-                                                        companyId: '',
-                                                        phone: '',
-                                                        isActive: true,
-                                                    })
-                                                    setEditingUser(null)
-                                                    setShowForm(true)
-                                                }}
-                                                style={{ fontSize: '12px', padding: '5px 10px' }}
-                                            >
-                                                Yetki Ver
-                                            </button>
-                                        ) : (
-                                            <>
-                                                <button
-                                                    type="button"
-                                                    className="btn"
-                                                    onClick={() => handleEdit(user)}
-                                                    style={{ fontSize: '12px', padding: '5px 10px', marginRight: '5px' }}
-                                                >
-                                                    Düzenle
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-danger"
-                                                    onClick={() => handleDelete(user.id)}
-                                                    style={{ fontSize: '12px', padding: '5px 10px' }}
-                                                >
-                                                    Sil
-                                                </button>
-                                            </>
-                                        )}
+                        </thead>
+                        <tbody>
+                            {filteredUsers.length === 0 ? (
+                                <tr>
+                                    <td colSpan="6" style={{ textAlign: 'center', padding: '20px' }}>
+                                        {companyIdFromUrl ? 'Bu firmaya bağlı kullanıcı yok.' : 'Henüz kullanıcı eklenmemiş'}
                                     </td>
                                 </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
+                            ) : (
+                                filteredUsers.map((user) => (
+                                    <tr key={user.id || user.authUserId || user.email} style={user.hasProfile === false ? { background: '#f9f9f9' } : undefined}>
+                                        <td className="col-user-name">
+                                            <div className="user-name-cell">
+                                                <span className="user-name">{user.fullName || '-'}</span>
+                                                <span className="user-email-mobile">{user.email}</span>
+                                            </div>
+                                        </td>
+                                        <td className="col-email hide-mobile">{user.email}</td>
+                                        <td className="col-role">
+                                            {user.hasProfile === false ? (
+                                                <span className="role-badge role-none">—</span>
+                                            ) : (
+                                                <span className="role-badge">{getRoleName(user.roleId)}</span>
+                                            )}
+                                        </td>
+                                        <td className="col-company hide-mobile">{getCompanyName(user.companyId)}</td>
+                                        <td className="col-status hide-mobile">
+                                            {user.hasProfile === false ? (
+                                                <span style={{ color: '#888', fontSize: '12px' }}>—</span>
+                                            ) : (
+                                                <span className={`status-badge ${user.isActive ? 'status-active' : 'status-cancelled'}`}>
+                                                    {user.isActive ? 'Aktif' : 'Pasif'}
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td className="col-user-actions">
+                                            {user.hasProfile === false ? (
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-primary btn-grant"
+                                                    onClick={() => {
+                                                        setFormData({
+                                                            email: user.email,
+                                                            fullName: user.fullName || user.email,
+                                                            roleId: '',
+                                                            companyId: '',
+                                                            phone: '',
+                                                            isActive: true,
+                                                        })
+                                                        setEditingUser(null)
+                                                        setShowForm(true)
+                                                    }}
+                                                    title="Yetki Ver"
+                                                >
+                                                    <span className="btn-icon-text">🔑</span>
+                                                    <span className="btn-full-text">Yetki Ver</span>
+                                                </button>
+                                            ) : (
+                                                <div className="action-buttons-compact">
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-icon btn-edit"
+                                                        onClick={() => handleEdit(user)}
+                                                        title="Düzenle"
+                                                    >
+                                                        <span className="btn-icon-text">✏️</span>
+                                                        <span className="btn-full-text">Düzenle</span>
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-icon btn-delete"
+                                                        onClick={() => handleDelete(user.id)}
+                                                        title="Sil"
+                                                    >
+                                                        <span className="btn-icon-text">🗑️</span>
+                                                        <span className="btn-full-text">Sil</span>
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     )

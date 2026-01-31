@@ -211,13 +211,12 @@ function Projects() {
         </div>
       )}
 
-      <div className="card">
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ marginRight: '10px' }}>Firmaya Göre Filtrele:</label>
+      <div className="card projects-card">
+        <div className="projects-filter">
           <select
             value={filterCompanyId}
             onChange={(e) => setFilterCompanyId(e.target.value)}
-            style={{ padding: '5px 10px' }}
+            className="filter-select"
           >
             <option value="">Tüm Firmalar</option>
             {companies.map(company => (
@@ -226,57 +225,68 @@ function Projects() {
           </select>
         </div>
 
-        <table>
-          <thead>
-            <tr>
-              <th>Proje Adı</th>
-              <th>Firma</th>
-              <th>Durum</th>
-              <th>Başlangıç</th>
-              <th>Bitiş</th>
-              <th>İşlemler</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredProjects.length === 0 ? (
+        <div className="table-responsive">
+          <table className="projects-table">
+            <thead>
               <tr>
-                <td colSpan="6" style={{ textAlign: 'center', padding: '20px' }}>
-                  Henüz proje eklenmemiş
-                </td>
+                <th className="col-project-name">Proje</th>
+                <th className="col-project-status">Durum</th>
+                <th className="col-project-date hide-mobile">Bitiş</th>
+                <th className="col-project-actions">İşlem</th>
               </tr>
-            ) : (
-              filteredProjects.map((project) => (
-                <tr key={project.id}>
-                  <td>{project.name}</td>
-                  <td>{getCompanyName(project.companyId)}</td>
-                  <td>
-                    <span className={`status-badge status-${project.status}`}>
-                      {getStatusLabel(project.status)}
-                    </span>
-                  </td>
-                  <td>{project.startDate ? new Date(project.startDate).toLocaleDateString('tr-TR') : '-'}</td>
-                  <td>{project.endDate ? new Date(project.endDate).toLocaleDateString('tr-TR') : '-'}</td>
-                  <td>
-                    <button
-                      className="btn"
-                      onClick={() => handleEdit(project)}
-                      style={{ fontSize: '12px', padding: '5px 10px', marginRight: '5px' }}
-                    >
-                      Düzenle
-                    </button>
-                    <button
-                      className="btn btn-danger"
-                      onClick={() => handleDelete(project.id)}
-                      style={{ fontSize: '12px', padding: '5px 10px' }}
-                    >
-                      Sil
-                    </button>
+            </thead>
+            <tbody>
+              {filteredProjects.length === 0 ? (
+                <tr>
+                  <td colSpan="4" style={{ textAlign: 'center', padding: '20px' }}>
+                    Henüz proje eklenmemiş
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                filteredProjects.map((project) => (
+                  <tr key={project.id}>
+                    <td className="col-project-name">
+                      <div className="project-name-cell">
+                        <span className="project-name">{project.name}</span>
+                        <span className="project-company">{getCompanyName(project.companyId)}</span>
+                      </div>
+                    </td>
+                    <td className="col-project-status">
+                      <span className={`status-badge status-${project.status}`}>
+                        {getStatusLabel(project.status)}
+                      </span>
+                    </td>
+                    <td className="col-project-date hide-mobile">
+                      {project.endDate ? new Date(project.endDate).toLocaleDateString('tr-TR') : '-'}
+                    </td>
+                    <td className="col-project-actions">
+                      <div className="action-buttons-compact">
+                        <button
+                          type="button"
+                          className="btn btn-icon btn-edit"
+                          onClick={() => handleEdit(project)}
+                          title="Düzenle"
+                        >
+                          <span className="btn-icon-text">✏️</span>
+                          <span className="btn-full-text">Düzenle</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-icon btn-delete"
+                          onClick={() => handleDelete(project.id)}
+                          title="Sil"
+                        >
+                          <span className="btn-icon-text">🗑️</span>
+                          <span className="btn-full-text">Sil</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   )

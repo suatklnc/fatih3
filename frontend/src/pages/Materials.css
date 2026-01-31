@@ -328,3 +328,603 @@
     padding: 3px 6px !important;
   }
 }
+
+/* ==================== COMPANIES PAGE STYLES ==================== */
+.companies-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.col-company-name {
+  width: 50%;
+}
+
+.col-tax,
+.col-phone,
+.col-email {
+  width: auto;
+}
+
+.col-staff {
+  text-align: center;
+  width: 40px;
+}
+
+.col-company-actions {
+  width: 80px;
+  text-align: right;
+}
+
+.company-name-cell {
+  display: block;
+}
+
+.company-name {
+  font-weight: 500;
+  display: block;
+  word-break: break-word;
+}
+
+.company-info-mobile {
+  display: none;
+  font-size: 11px;
+  color: #666;
+}
+
+.action-buttons-compact {
+  display: inline-flex;
+  gap: 4px;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+}
+
+.btn-icon {
+  padding: 5px 10px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.btn-edit {
+  background: #ffc107;
+  color: #333;
+}
+
+.btn-delete {
+  background: #dc3545;
+  color: white;
+}
+
+.btn-icon-text {
+  display: none;
+}
+
+.btn-full-text {
+  display: inline;
+}
+
+/* Companies mobile */
+@media (max-width: 768px) {
+  .companies-card .hide-mobile {
+    display: none !important;
+  }
+
+  .col-company-name {
+    width: 55%;
+  }
+
+  .col-staff {
+    width: 35px;
+    font-size: 13px;
+  }
+
+  .col-company-actions {
+    width: 60px;
+  }
+
+  .company-info-mobile {
+    display: block;
+  }
+
+  .company-name {
+    font-size: 13px;
+  }
+
+  .companies-table th,
+  .companies-table td {
+    padding: 8px 6px;
+    vertical-align: middle;
+  }
+
+  .action-buttons-compact {
+    flex-direction: row;
+    gap: 3px;
+  }
+
+  .btn-icon {
+    padding: 4px 6px;
+    font-size: 12px;
+    min-width: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-icon-text {
+    display: inline;
+  }
+
+  .btn-full-text {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .col-company-name {
+    width: 50%;
+  }
+
+  .col-staff {
+    width: 25px;
+    font-size: 11px;
+  }
+
+  .col-company-actions {
+    width: 55px;
+  }
+
+  .companies-table th,
+  .companies-table td {
+    padding: 6px 4px;
+  }
+
+  .company-name {
+    font-size: 12px;
+  }
+
+  .company-info-mobile {
+    font-size: 9px;
+  }
+
+  .btn-icon {
+    padding: 3px 5px;
+    font-size: 11px;
+    min-width: 24px;
+  }
+}
+
+/* ==================== USERS PAGE STYLES ==================== */
+.users-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.col-user-name {
+  width: 50%;
+}
+
+.col-email {
+  width: auto;
+}
+
+.col-role {
+  width: 60px;
+  text-align: center;
+}
+
+.col-company,
+.col-status {
+  width: auto;
+}
+
+.col-user-actions {
+  width: 70px;
+  text-align: right;
+}
+
+.user-name-cell {
+  display: block;
+}
+
+.user-name {
+  font-weight: 500;
+  display: block;
+  word-break: break-word;
+}
+
+.user-email-mobile {
+  display: none;
+  font-size: 10px;
+  color: #888;
+}
+
+.role-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 11px;
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.role-badge.role-none {
+  background: #f5f5f5;
+  color: #999;
+}
+
+.btn-grant {
+  font-size: 11px;
+  padding: 4px 6px;
+  white-space: nowrap;
+}
+
+.btn-grant .btn-icon-text {
+  display: none;
+}
+
+.btn-grant .btn-full-text {
+  display: inline;
+}
+
+.users-card .action-buttons-compact {
+  display: inline-flex;
+  gap: 3px;
+  justify-content: flex-end;
+}
+
+.users-card .btn-icon {
+  padding: 4px 6px;
+  font-size: 11px;
+}
+
+/* Users mobile */
+@media (max-width: 768px) {
+  .users-card .hide-mobile {
+    display: none !important;
+  }
+
+  .col-user-name {
+    width: 55%;
+  }
+
+  .col-role {
+    width: 50px;
+  }
+
+  .col-user-actions {
+    width: 60px;
+  }
+
+  .user-email-mobile {
+    display: block;
+  }
+
+  .user-name {
+    font-size: 13px;
+  }
+
+  .users-table th,
+  .users-table td {
+    padding: 8px 6px;
+    vertical-align: middle;
+  }
+
+  .role-badge {
+    font-size: 10px;
+    padding: 2px 5px;
+  }
+
+  .btn-grant {
+    padding: 4px 6px;
+    font-size: 11px;
+  }
+
+  .btn-grant .btn-icon-text {
+    display: inline;
+  }
+
+  .btn-grant .btn-full-text {
+    display: none;
+  }
+
+  .users-card .btn-icon {
+    padding: 4px 5px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .col-user-name {
+    width: 50%;
+  }
+
+  .col-role {
+    width: 45px;
+  }
+
+  .col-user-actions {
+    width: 55px;
+  }
+
+  .users-table th,
+  .users-table td {
+    padding: 6px 4px;
+  }
+
+  .user-name {
+    font-size: 12px;
+  }
+
+  .user-email-mobile {
+    font-size: 9px;
+  }
+
+  .role-badge {
+    font-size: 9px;
+    padding: 2px 4px;
+  }
+
+  .btn-grant {
+    padding: 3px 5px;
+    font-size: 10px;
+  }
+
+  .users-card .btn-icon {
+    padding: 3px 4px;
+    font-size: 10px;
+  }
+}
+
+/* ==================== PROJECTS PAGE STYLES ==================== */
+.projects-filter {
+  margin-bottom: 12px;
+}
+
+.filter-select {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  width: 100%;
+  max-width: 200px;
+}
+
+.projects-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.project-name-cell {
+  display: block;
+}
+
+.project-name {
+  font-weight: 500;
+  font-size: 14px;
+  display: block;
+}
+
+.project-company {
+  font-size: 11px;
+  color: #666;
+  display: block;
+}
+
+.col-project-name {
+  width: 50%;
+}
+
+.col-project-status {
+  width: 60px;
+  text-align: center;
+}
+
+.col-project-status .status-badge {
+  font-size: 11px;
+}
+
+.col-project-date {
+  width: 80px;
+}
+
+.col-project-actions {
+  width: 90px;
+  text-align: right;
+}
+
+/* Projects mobile */
+@media (max-width: 768px) {
+  .projects-card .hide-mobile {
+    display: none !important;
+  }
+
+  .filter-select {
+    max-width: none;
+    font-size: 16px;
+  }
+
+  .projects-table {
+    table-layout: fixed;
+  }
+
+  .col-project-name {
+    width: auto;
+  }
+
+  .col-project-status {
+    width: 55px;
+  }
+
+  .col-project-actions {
+    width: 70px;
+  }
+
+  .projects-table th,
+  .projects-table td {
+    padding: 10px 6px;
+    vertical-align: middle;
+  }
+
+  .project-name {
+    font-size: 13px;
+    word-break: break-word;
+  }
+
+  .project-company {
+    font-size: 10px;
+  }
+
+  .col-project-status .status-badge {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .col-project-status {
+    width: 50px;
+  }
+
+  .col-project-actions {
+    width: 60px;
+  }
+
+  .projects-table th,
+  .projects-table td {
+    padding: 8px 4px;
+  }
+
+  .project-name {
+    font-size: 12px;
+  }
+
+  .project-company {
+    font-size: 9px;
+  }
+
+  .col-project-status .status-badge {
+    font-size: 9px;
+    padding: 2px 4px;
+  }
+}
+
+/* ==================== SUPPLIERS PAGE STYLES ==================== */
+.suppliers-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.col-supplier-name {
+  width: 45%;
+}
+
+.col-supplier-phone {
+  width: 30%;
+}
+
+.col-supplier-actions {
+  width: 25%;
+  text-align: right;
+}
+
+.supplier-name-cell {
+  display: block;
+}
+
+.supplier-name {
+  font-weight: 500;
+  font-size: 14px;
+  display: block;
+  word-break: break-word;
+}
+
+.supplier-contact {
+  font-size: 11px;
+  color: #666;
+  display: block;
+}
+
+.suppliers-card .action-buttons-compact {
+  display: inline-flex;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.suppliers-card .btn-icon {
+  padding: 4px 6px;
+  font-size: 12px;
+  min-width: auto;
+}
+
+/* Suppliers mobile */
+@media (max-width: 768px) {
+  .col-supplier-name {
+    width: 50%;
+  }
+
+  .col-supplier-phone {
+    width: 25%;
+  }
+
+  .col-supplier-actions {
+    width: 25%;
+  }
+
+  .suppliers-table th,
+  .suppliers-table td {
+    padding: 8px 6px;
+    vertical-align: middle;
+  }
+
+  .supplier-name {
+    font-size: 13px;
+  }
+
+  .supplier-contact {
+    font-size: 10px;
+  }
+
+  .col-supplier-phone {
+    font-size: 12px;
+  }
+
+  .suppliers-card .btn-icon {
+    padding: 4px 5px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .col-supplier-name {
+    width: 45%;
+  }
+
+  .col-supplier-phone {
+    width: 25%;
+  }
+
+  .col-supplier-actions {
+    width: 30%;
+  }
+
+  .suppliers-table th,
+  .suppliers-table td {
+    padding: 6px 4px;
+  }
+
+  .supplier-name {
+    font-size: 12px;
+  }
+
+  .supplier-contact {
+    font-size: 9px;
+  }
+
+  .col-supplier-phone {
+    font-size: 11px;
+  }
+
+  .suppliers-card .btn-icon {
+    padding: 3px 4px;
+    font-size: 10px;
+  }
+}

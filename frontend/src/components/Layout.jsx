@@ -333,7 +333,6 @@ function Layout({ children }) {
           ) : (
             <span>Yükleniyor...</span>
           )}
-          <div className="notifications">🔔</div>
         </div>
       </nav>
 
