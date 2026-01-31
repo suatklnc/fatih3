@@ -168,14 +168,6 @@ export default function SupplierQuoteForm() {
                             <span className="label">İstenen Tarih</span>
                             <span className="value highlight">{formData.requiredDate ? new Date(formData.requiredDate).toLocaleDateString('tr-TR') : '-'}</span>
                         </div>
-                        <div className="info-item">
-                            <span className="label">Öncelik</span>
-                            <span className={`value priority-${formData.priority}`}>
-                                {formData.priority === 'urgent' ? '🔴 Acil' :
-                                    formData.priority === 'high' ? '🟠 Yüksek' :
-                                        formData.priority === 'normal' ? '🔵 Normal' : '🟢 Düşük'}
-                            </span>
-                        </div>
                     </div>
                     {formData.notes && (
                         <div className="request-notes">

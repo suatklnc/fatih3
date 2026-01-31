@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { materialRequestsApi, materialsApi, projectsApi, suppliersApi } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import './MaterialRequests.css'
@@ -51,11 +51,13 @@ function MaterialRequests() {
 
   const [formData, setFormData] = useState({
     projectId: '',
-    priority: 'normal',
     requiredDate: '',
     notes: '',
     items: [{ materialId: '', quantity: 0, notes: '' }],
   })
+  
+  // Satır referansları - scroll için
+  const itemRefs = useRef({})
 
   useEffect(() => {
     loadData()
@@ -87,10 +89,15 @@ function MaterialRequests() {
   }
 
   const handleAddItem = () => {
+    const newIndex = formData.items.length
     setFormData({
       ...formData,
       items: [...formData.items, { materialId: '', quantity: 0, notes: '' }],
     })
+    // Yeni eklenen satıra scroll yap
+    setTimeout(() => {
+      itemRefs.current[newIndex]?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }, 100)
   }
 
   const handleRemoveItem = (index) => {
@@ -111,6 +118,12 @@ function MaterialRequests() {
 
   const handleMaterialSearch = (index, query) => {
     setMaterialSearchQueries(prev => ({ ...prev, [index]: query }))
+    // Arama yapıldığında satıra scroll yap
+    if (query.length >= 2) {
+      setTimeout(() => {
+        itemRefs.current[index]?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }, 50)
+    }
   }
 
   const getFilteredMaterialsForItem = (index) => {
@@ -132,7 +145,6 @@ function MaterialRequests() {
       // Backend'in beklediği formata dönüştür
       const requestData = {
         projectId: formData.projectId,
-        priority: formData.priority,
         requiredDate: formData.requiredDate || null,
         notes: formData.notes || null,
         items: formData.items.map(item => ({
@@ -146,7 +158,6 @@ function MaterialRequests() {
       setShowForm(false)
       setFormData({
         projectId: '',
-        priority: 'normal',
         requiredDate: '',
         notes: '',
         items: [{ materialId: '', quantity: 0, notes: '' }],
@@ -200,11 +211,6 @@ function MaterialRequests() {
   const getMaterialName = (materialId) => {
     const material = materials.find(m => m.id === materialId)
     return material ? `${material.code} - ${material.name} ` : materialId
-  }
-
-  const getPriorityText = (priority) => {
-    const texts = { low: 'Düşük', normal: 'Normal', high: 'Yüksek', urgent: 'Acil' }
-    return texts[priority] || priority
   }
 
   const getStatusBadge = (status) => {
@@ -298,7 +304,6 @@ function MaterialRequests() {
               <div><strong>Talep No:</strong> {selectedRequest.requestNumber}</div>
               <div><strong>Durum:</strong> <span className={`badge ${getStatusBadge(selectedRequest.status)} `}>{getStatusText(selectedRequest.status)}</span></div>
               <div><strong>Proje:</strong> {getProjectName(selectedRequest.projectId)}</div>
-              <div><strong>Öncelik:</strong> {getPriorityText(selectedRequest.priority)}</div>
               <div><strong>Talep Tarihi:</strong> {new Date(selectedRequest.requestDate).toLocaleDateString('tr-TR')}</div>
               <div><strong>Gerekli Tarih:</strong> {selectedRequest.requiredDate ? new Date(selectedRequest.requiredDate).toLocaleDateString('tr-TR') : '-'}</div>
             </div>
@@ -397,87 +402,112 @@ function MaterialRequests() {
       </div>
 
       {showForm && (
-        <div className="card">
-          <h2>Yeni Malzeme Talebi</h2>
+        <div className="card" style={{ padding: '20px' }}>
           <form onSubmit={handleSubmit}>
-            <div className="form-row">
-              <div className="form-group">
-                <label>Proje *</label>
+            {/* Üst Bilgiler - Kompakt Grid */}
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', 
+              gap: '12px',
+              marginBottom: '20px',
+              padding: '16px',
+              background: '#f8f9fa',
+              borderRadius: '8px'
+            }}>
+              <div>
+                <label style={{ fontSize: '12px', color: '#666', display: 'block', marginBottom: '4px' }}>Proje *</label>
                 <select
                   required
                   value={formData.projectId}
                   onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
+                  style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '14px' }}
                 >
-                  <option value="">Proje Seçiniz</option>
+                  <option value="">Seçiniz</option>
                   {projects.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name}
-                    </option>
+                    <option key={p.id} value={p.id}>{p.name}</option>
                   ))}
                 </select>
               </div>
-              <div className="form-group">
-                <label>Öncelik</label>
-                <select
-                  value={formData.priority}
-                  onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                >
-                  <option value="low">Düşük</option>
-                  <option value="normal">Normal</option>
-                  <option value="high">Yüksek</option>
-                  <option value="urgent">Acil</option>
-                </select>
+              <div>
+                <label style={{ fontSize: '12px', color: '#666', display: 'block', marginBottom: '4px' }}>Gerekli Tarih</label>
+                <input
+                  type="date"
+                  value={formData.requiredDate}
+                  onChange={(e) => setFormData({ ...formData, requiredDate: e.target.value })}
+                  style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '14px' }}
+                />
+              </div>
+              <div>
+                <label style={{ fontSize: '12px', color: '#666', display: 'block', marginBottom: '4px' }}>Not</label>
+                <input
+                  type="text"
+                  placeholder="Talep notu..."
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '14px' }}
+                />
               </div>
             </div>
 
-            <div className="form-group">
-              <label>Gerekli Tarih</label>
-              <input
-                type="date"
-                value={formData.requiredDate}
-                onChange={(e) => setFormData({ ...formData, requiredDate: e.target.value })}
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Notlar</label>
-              <textarea
-                value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              />
-            </div>
-
-            <div className="form-group">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                <label>Malzeme Kalemleri</label>
-                <button type="button" className="btn btn-success" onClick={handleAddItem} style={{ fontSize: '12px', padding: '5px 10px' }}>
-                  + Kalem Ekle
-                </button>
+            {/* Malzeme Tablosu */}
+            <div style={{ 
+              border: '1px solid #e0e0e0', 
+              borderRadius: '8px', 
+              overflow: 'hidden',
+              marginBottom: '16px'
+            }}>
+              {/* Tablo Başlığı */}
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: '1fr 100px 150px 50px', 
+                gap: '8px',
+                padding: '12px 16px',
+                background: '#1976d2',
+                color: 'white',
+                fontWeight: '600',
+                fontSize: '13px'
+              }}>
+                <div>Malzeme</div>
+                <div style={{ textAlign: 'center' }}>Miktar</div>
+                <div>Kalem Notu</div>
+                <div></div>
               </div>
 
-              {formData.items.map((item, index) => {
-                const filteredMats = getFilteredMaterialsForItem(index)
-                const selectedMaterial = item.materialId ? materials.find(m => m.id === item.materialId) : null
-                const searchQuery = (materialSearchQueries[index] || '').trim()
-                return (
-                  <div key={index} className="request-item">
-                    <div className="form-row">
-                      <div className="form-group" style={{ flex: 1 }}>
-                        <label>Malzeme</label>
-                        {/* Seçilen malzemeyi göster */}
-                        {selectedMaterial && (
+              {/* Malzeme Satırları */}
+              <div>
+                {formData.items.map((item, index) => {
+                  const filteredMats = getFilteredMaterialsForItem(index)
+                  const selectedMaterial = item.materialId ? materials.find(m => m.id === item.materialId) : null
+                  const searchQuery = (materialSearchQueries[index] || '').trim()
+                  
+                  return (
+                    <div 
+                      key={index}
+                      ref={el => itemRefs.current[index] = el}
+                      style={{ 
+                        display: 'grid', 
+                        gridTemplateColumns: '1fr 100px 150px 50px', 
+                        gap: '8px',
+                        padding: '12px 16px',
+                        borderBottom: '1px solid #eee',
+                        alignItems: 'start',
+                        background: index % 2 === 0 ? '#fff' : '#fafafa'
+                      }}
+                    >
+                      {/* Malzeme Seçimi */}
+                      <div style={{ position: 'relative' }}>
+                        {selectedMaterial ? (
                           <div style={{ 
-                            padding: '8px 12px', 
-                            background: '#e8f5e9', 
-                            border: '1px solid #4caf50',
-                            borderRadius: '4px', 
-                            marginBottom: '8px',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center'
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '8px',
+                            padding: '6px 10px',
+                            background: '#e8f5e9',
+                            borderRadius: '6px',
+                            border: '1px solid #c8e6c9'
                           }}>
-                            <span style={{ fontWeight: '500', color: '#2e7d32' }}>
-                              ✓ {selectedMaterial.code} - {selectedMaterial.name}
+                            <span style={{ flex: 1, fontSize: '13px', color: '#2e7d32', fontWeight: '500' }}>
+                              {selectedMaterial.code} - {selectedMaterial.name}
                             </span>
                             <button
                               type="button"
@@ -485,135 +515,191 @@ function MaterialRequests() {
                               style={{ 
                                 background: 'none', 
                                 border: 'none', 
-                                color: '#666', 
+                                color: '#999', 
                                 cursor: 'pointer',
-                                fontSize: '16px'
+                                fontSize: '18px',
+                                lineHeight: 1,
+                                padding: '0 4px'
                               }}
                             >
                               ×
                             </button>
                           </div>
-                        )}
-                        <input
-                          type="text"
-                          placeholder="🔍 Malzeme ara (en az 2 karakter)..."
-                          value={materialSearchQueries[index] || ''}
-                          onChange={(e) => handleMaterialSearch(index, e.target.value)}
-                          style={{
-                            width: '100%',
-                            padding: '8px',
-                            border: '1px solid #ddd',
-                            borderRadius: '4px',
-                            marginBottom: '5px',
-                            fontSize: '14px'
-                          }}
-                        />
-                        {/* Arama sonuçları dropdown */}
-                        {searchQuery.length >= 2 && filteredMats.length > 0 && (
-                          <div style={{ 
-                            border: '1px solid #ddd', 
-                            borderRadius: '4px', 
-                            maxHeight: '150px', 
-                            overflowY: 'auto',
-                            background: '#fff',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                          }}>
-                            {filteredMats.map((m) => (
-                              <div
-                                key={m.id}
-                                onClick={() => {
-                                  handleItemChange(index, 'materialId', m.id)
-                                  handleMaterialSearch(index, '')
-                                }}
-                                style={{
-                                  padding: '10px 12px',
-                                  cursor: 'pointer',
-                                  borderBottom: '1px solid #eee',
-                                  transition: 'background 0.2s'
-                                }}
-                                onMouseEnter={(e) => e.target.style.background = '#f5f5f5'}
-                                onMouseLeave={(e) => e.target.style.background = '#fff'}
-                              >
-                                <div style={{ fontWeight: '500' }}>{m.code} - {m.name}</div>
-                                {m.category && <div style={{ fontSize: '12px', color: '#666' }}>{m.category}</div>}
+                        ) : (
+                          <>
+                            <input
+                              type="text"
+                              placeholder="🔍 Ara..."
+                              value={materialSearchQueries[index] || ''}
+                              onChange={(e) => handleMaterialSearch(index, e.target.value)}
+                              style={{
+                                width: '100%',
+                                padding: '8px 10px',
+                                border: '1px solid #ddd',
+                                borderRadius: '6px',
+                                fontSize: '13px'
+                              }}
+                            />
+                            {/* Arama Sonuçları Dropdown */}
+                            {searchQuery.length >= 2 && filteredMats.length > 0 && (
+                              <div style={{ 
+                                position: 'absolute',
+                                top: '100%',
+                                left: 0,
+                                right: 0,
+                                zIndex: 9999,
+                                border: '1px solid #ddd', 
+                                borderRadius: '6px', 
+                                background: '#fff',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                                marginTop: '4px',
+                                maxHeight: '200px',
+                                overflowY: 'auto'
+                              }}>
+                                {filteredMats.map((m) => (
+                                  <div
+                                    key={m.id}
+                                    onClick={() => {
+                                      handleItemChange(index, 'materialId', m.id)
+                                      handleMaterialSearch(index, '')
+                                    }}
+                                    style={{
+                                      padding: '10px 12px',
+                                      cursor: 'pointer',
+                                      borderBottom: '1px solid #f0f0f0',
+                                      fontSize: '13px'
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.background = '#f5f5f5'}
+                                    onMouseLeave={(e) => e.currentTarget.style.background = '#fff'}
+                                  >
+                                    <div style={{ fontWeight: '500' }}>{m.code} - {m.name}</div>
+                                    {m.category && <div style={{ fontSize: '11px', color: '#888' }}>{m.category}</div>}
+                                  </div>
+                                ))}
                               </div>
-                            ))}
-                          </div>
+                            )}
+                            {searchQuery.length >= 2 && filteredMats.length === 0 && (
+                              <div style={{ fontSize: '11px', color: '#999', marginTop: '4px' }}>Sonuç yok</div>
+                            )}
+                          </>
                         )}
-                        {searchQuery.length >= 2 && filteredMats.length === 0 && (
-                          <div style={{ fontSize: '12px', color: '#999', marginTop: '5px' }}>
-                            Arama sonucu bulunamadı
-                          </div>
-                        )}
-                        {searchQuery.length > 0 && searchQuery.length < 2 && (
-                          <div style={{ fontSize: '12px', color: '#999', marginTop: '5px' }}>
-                            En az 2 karakter giriniz...
-                          </div>
-                        )}
-                        {/* Gizli required input - form validation için */}
-                        <input
-                          type="hidden"
-                          required
-                          value={item.materialId}
-                        />
+                        <input type="hidden" required value={item.materialId} />
                       </div>
-                      <div className="form-group">
-                        <label>Miktar</label>
+
+                      {/* Miktar */}
+                      <div>
                         <input
                           type="number"
                           required
                           step="0.01"
-                          value={item.quantity}
+                          min="0.01"
+                          value={item.quantity || ''}
                           onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)}
+                          style={{
+                            width: '100%',
+                            padding: '8px',
+                            border: '1px solid #ddd',
+                            borderRadius: '6px',
+                            fontSize: '13px',
+                            textAlign: 'center'
+                          }}
                         />
                       </div>
-                      <div className="form-group">
-                        <label>Not</label>
+
+                      {/* Kalem Notu */}
+                      <div>
                         <input
                           type="text"
+                          placeholder="Not..."
                           value={item.notes}
                           onChange={(e) => handleItemChange(index, 'notes', e.target.value)}
+                          style={{
+                            width: '100%',
+                            padding: '8px',
+                            border: '1px solid #ddd',
+                            borderRadius: '6px',
+                            fontSize: '13px'
+                          }}
                         />
                       </div>
-                      <div className="form-group" style={{ display: 'flex', alignItems: 'flex-end' }}>
-                        <button
-                          type="button"
-                          className="btn btn-danger"
-                          onClick={() => handleRemoveItem(index)}
-                          style={{ fontSize: '12px', padding: '5px 10px' }}
-                        >
-                          Sil
-                        </button>
+
+                      {/* Sil Butonu */}
+                      <div style={{ textAlign: 'center' }}>
+                        {formData.items.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveItem(index)}
+                            style={{ 
+                              background: '#ffebee',
+                              border: '1px solid #ffcdd2',
+                              color: '#c62828',
+                              borderRadius: '6px',
+                              padding: '6px 10px',
+                              cursor: 'pointer',
+                              fontSize: '14px'
+                            }}
+                          >
+                            🗑
+                          </button>
+                        )}
                       </div>
                     </div>
-                  </div>
-                )
-              })}
+                  )
+                })}
+              </div>
+
+              {/* Kalem Ekle Butonu */}
+              <div style={{ padding: '12px 16px', background: '#f5f5f5', borderTop: '1px solid #eee' }}>
+                <button 
+                  type="button" 
+                  onClick={handleAddItem}
+                  style={{
+                    background: 'none',
+                    border: '1px dashed #1976d2',
+                    color: '#1976d2',
+                    padding: '8px 16px',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '13px',
+                    fontWeight: '500',
+                    width: '100%'
+                  }}
+                >
+                  + Yeni Kalem Ekle
+                </button>
+              </div>
             </div>
 
-            <button type="submit" className="btn btn-primary">Talep Oluştur</button>
+            {/* Footer */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '13px', color: '#666' }}>
+                {formData.items.length} kalem • {formData.items.filter(i => i.materialId).length} malzeme seçili
+              </span>
+              <button 
+                type="submit" 
+                className="btn btn-primary"
+                style={{
+                  padding: '10px 24px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  borderRadius: '6px'
+                }}
+              >
+                Talep Oluştur
+              </button>
+            </div>
           </form>
         </div>
       )}
 
+      {!showForm && (
       <div className="card">
-        {isPurchasing && (
-          <div style={{ padding: '12px 16px', background: '#e8f4fd', borderBottom: '1px solid #cce5ff', fontSize: '14px', color: '#004085' }}>
-            <strong>Satın alma yetkisi:</strong> Rolünüz &quot;{rawRole || '—'}&quot; olarak algılandı. Durumu <strong>Onaylandı</strong> veya <strong>Satın Almaya Gönderildi</strong> olan taleplerde &quot;Tedarikçilere Gönder&quot; butonu görünür.
-            {displayRequests.filter(r => r.status === 'approved' || r.status === 'sent_to_purchasing').length === 0 && displayRequests.length > 0 && (
-              <span style={{ display: 'block', marginTop: '6px' }}>
-                Şu an listede tedarikçiye gönderebileceğiniz talep yok (önce tam yetkili/yönetici talebi onaylayıp &quot;Satın Almaya Gönder&quot; demeli).
-              </span>
-            )}
-          </div>
-        )}
         <table>
           <thead>
             <tr>
               <th>Talep No</th>
               <th>Proje</th>
               <th>Durum</th>
-              <th>Öncelik</th>
               <th>Tarih</th>
               <th>İşlemler</th>
             </tr>
@@ -621,7 +707,7 @@ function MaterialRequests() {
           <tbody>
             {displayRequests.length === 0 ? (
               <tr>
-                <td colSpan="6" style={{ textAlign: 'center', padding: '20px' }}>
+                <td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>
                   {isPurchasingOnly ? 'Onaylanmış talep bulunmuyor.' : 'Henüz talep oluşturulmamış'}
                 </td>
               </tr>
@@ -635,7 +721,6 @@ function MaterialRequests() {
                       {getStatusText(request.status)}
                     </span>
                   </td>
-                  <td>{getPriorityText(request.priority)}</td>
                   <td>{new Date(request.requestDate).toLocaleDateString('tr-TR')}</td>
                   <td onClick={(e) => e.stopPropagation()}>
                     {request.status === 'pending' && isPatronOrAdmin && (
@@ -690,6 +775,7 @@ function MaterialRequests() {
           </tbody>
         </table>
       </div>
+      )}
     </div>
   )
 }

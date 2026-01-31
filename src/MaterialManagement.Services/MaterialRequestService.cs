@@ -137,11 +137,7 @@ public class MaterialRequestService : IMaterialRequestService
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td style=""width: 50%; padding: 5px 0;"">
-                                        <span style=""color: #666; font-size: 12px;"">Öncelik:</span><br>
-                                        <strong style=""color: #333; font-size: 14px;"">{GetPriorityText(request.Priority)}</strong>
-                                    </td>
-                                    <td style=""width: 50%; padding: 5px 0;"">
+                                    <td colspan=""2"" style=""padding: 5px 0;"">
                                         <span style=""color: #666; font-size: 12px;"">Malzeme Sayısı:</span><br>
                                         <strong style=""color: #333; font-size: 14px;"">{request.Items.Count} kalem</strong>
                                     </td>
@@ -242,18 +238,6 @@ public class MaterialRequestService : IMaterialRequestService
             throw;
         }
     }
-    
-    private string GetPriorityText(string priority)
-    {
-        return priority switch
-        {
-            "low" => "🟢 Düşük",
-            "normal" => "🔵 Normal",
-            "high" => "🟠 Yüksek",
-            "urgent" => "🔴 Acil",
-            _ => priority
-        };
-    }
 
     public async Task<List<MaterialRequest>> GetAllRequestsAsync()
     {
@@ -312,7 +296,7 @@ public class MaterialRequestService : IMaterialRequestService
                 RequestedBy = userId,
                 RequestNumber = requestNumber,
                 Status = "pending",
-                Priority = dto.Priority,
+                Priority = dto.Priority ?? "normal",
                 RequestDate = DateTime.Today,
                 RequiredDate = dto.RequiredDate,
                 Notes = dto.Notes,
