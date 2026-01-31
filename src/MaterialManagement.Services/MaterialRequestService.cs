@@ -338,6 +338,63 @@ public class MaterialRequestService : IMaterialRequestService
         }
     }
 
+    public async Task<MaterialRequest> UpdateRequestAsync(Guid id, MaterialRequestCreateDto dto)
+    {
+        try
+        {
+            var request = await GetRequestByIdAsync(id);
+            if (request == null)
+                throw new Exception("Request not found");
+            
+            // Sadece pending durumundaki talepler düzenlenebilir
+            if (request.Status != "pending")
+                throw new Exception("Sadece bekleyen talepler düzenlenebilir.");
+            
+            // Talebi güncelle
+            request.ProjectId = dto.ProjectId;
+            request.RequiredDate = dto.RequiredDate;
+            request.Notes = dto.Notes;
+            request.UpdatedAt = DateTime.UtcNow;
+            
+            await _supabaseService.Client
+                .From<MaterialRequest>()
+                .Where(r => r.Id == id)
+                .Update(request);
+            
+            // Mevcut item'ları sil
+            await _supabaseService.Client
+                .From<MaterialRequestItem>()
+                .Where(i => i.RequestId == id)
+                .Delete();
+            
+            // Yeni item'ları ekle
+            var items = dto.Items.Select(item => new MaterialRequestItem
+            {
+                Id = Guid.NewGuid(),
+                RequestId = id,
+                MaterialId = item.MaterialId,
+                Quantity = item.Quantity,
+                Notes = item.Notes,
+                CreatedAt = DateTime.UtcNow
+            }).ToList();
+            
+            if (items.Any())
+            {
+                await _supabaseService.Client
+                    .From<MaterialRequestItem>()
+                    .Insert(items);
+            }
+            
+            request.Items = items;
+            return request;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating request: {Id}", id);
+            throw;
+        }
+    }
+
     public async Task<MaterialRequest> UpdateRequestStatusAsync(Guid id, string status, Guid? approvedBy)
     {
         try

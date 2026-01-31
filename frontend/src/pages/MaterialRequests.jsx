@@ -35,6 +35,8 @@ function MaterialRequests() {
   const [suppliers, setSuppliers] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
+  const [editMode, setEditMode] = useState(false)
+  const [editingRequestId, setEditingRequestId] = useState(null)
   const [selectedRequest, setSelectedRequest] = useState(null)
   const [showDetail, setShowDetail] = useState(false)
 
@@ -169,20 +171,63 @@ function MaterialRequests() {
           notes: item.notes || null
         }))
       }
-      console.log('Sending request data:', JSON.stringify(requestData, null, 2))
-      await materialRequestsApi.create(requestData)
+      
+      if (editMode && editingRequestId) {
+        // Düzenleme modu
+        await materialRequestsApi.update(editingRequestId, requestData)
+        alert('Talep başarıyla güncellendi.')
+      } else {
+        // Yeni talep
+        await materialRequestsApi.create(requestData)
+      }
+      
       setShowForm(false)
+      setEditMode(false)
+      setEditingRequestId(null)
       setFormData({
         projectId: '',
         requiredDate: '',
         notes: '',
         items: [{ materialId: '', quantity: 0, notes: '' }],
       })
+      setMaterialSearchQueries({})
       refreshRequests()
     } catch (error) {
-      console.error('Error creating request:', error)
-      console.error('Error response data:', error.response?.data)
-      alert('Talep oluşturulurken hata oluştu: ' + JSON.stringify(error.response?.data))
+      console.error('Error saving request:', error)
+      const errorMsg = error.response?.data?.message || error.response?.data || error.message
+      alert('Talep kaydedilirken hata oluştu: ' + errorMsg)
+    }
+  }
+
+  // Düzenleme için talebi yükle
+  const handleEdit = async (request) => {
+    try {
+      // Detayları yükle
+      const res = await materialRequestsApi.getById(request.id)
+      const detail = res.data
+      
+      // Malzemeleri yükle (form için gerekli)
+      await loadMaterials()
+      
+      // Formu doldur
+      setFormData({
+        projectId: detail.projectId,
+        requiredDate: detail.requiredDate ? detail.requiredDate.split('T')[0] : '',
+        notes: detail.notes || '',
+        items: detail.items?.map(item => ({
+          materialId: item.materialId,
+          quantity: item.quantity,
+          notes: item.notes || ''
+        })) || [{ materialId: '', quantity: 0, notes: '' }]
+      })
+      
+      setEditMode(true)
+      setEditingRequestId(request.id)
+      setShowForm(true)
+      setShowDetail(false)
+    } catch (error) {
+      console.error('Error loading request for edit:', error)
+      alert('Talep yüklenirken hata oluştu')
     }
   }
 
@@ -413,8 +458,22 @@ function MaterialRequests() {
       <div className="page-header">
         <h1>Malzeme Talepleri</h1>
         <button className="btn btn-primary" onClick={() => {
-          if (!showForm) loadMaterials() // Form açılırken malzemeleri yükle
-          setShowForm(!showForm)
+          if (showForm) {
+            // Form kapatılırken reset
+            setShowForm(false)
+            setEditMode(false)
+            setEditingRequestId(null)
+            setFormData({
+              projectId: '',
+              requiredDate: '',
+              notes: '',
+              items: [{ materialId: '', quantity: 0, notes: '' }],
+            })
+            setMaterialSearchQueries({})
+          } else {
+            loadMaterials()
+            setShowForm(true)
+          }
         }}>
           {showForm ? 'İptal' : '+ Yeni Talep'}
         </button>
@@ -422,6 +481,19 @@ function MaterialRequests() {
 
       {showForm && (
         <div className="card" style={{ padding: '20px' }}>
+          {editMode && (
+            <div style={{ 
+              marginBottom: '15px', 
+              padding: '10px 15px', 
+              background: '#fff3e0', 
+              borderRadius: '6px',
+              border: '1px solid #ffcc80',
+              fontSize: '13px',
+              color: '#e65100'
+            }}>
+              📝 Düzenleme Modu - Talep güncelleniyor
+            </div>
+          )}
           <form onSubmit={handleSubmit}>
             {/* Üst Bilgiler - Kompakt Grid */}
             <div style={{ 
@@ -724,7 +796,7 @@ function MaterialRequests() {
                   borderRadius: '4px'
                 }}
               >
-                Talep Oluştur
+                {editMode ? 'Güncelle' : 'Talep Oluştur'}
               </button>
             </div>
           </form>
@@ -762,6 +834,15 @@ function MaterialRequests() {
                   </td>
                   <td>{new Date(request.requestDate).toLocaleDateString('tr-TR')}</td>
                   <td onClick={(e) => e.stopPropagation()}>
+                    {request.status === 'pending' && (
+                      <button
+                        className="btn"
+                        onClick={() => handleEdit(request)}
+                        style={{ fontSize: '12px', padding: '5px 10px', marginRight: '5px', background: '#ff9800', color: 'white' }}
+                      >
+                        Düzenle
+                      </button>
+                    )}
                     {request.status === 'pending' && isPatronOrAdmin && (
                       <>
                         <button

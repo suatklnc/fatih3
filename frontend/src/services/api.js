@@ -37,6 +37,7 @@ export const materialRequestsApi = {
   getAll: () => api.get('/materialrequests'),
   getById: (id) => api.get(`/materialrequests/${id}`),
   create: (data) => api.post('/materialrequests', data),
+  update: (id, data) => api.put(`/materialrequests/${id}`, data),
   updateStatus: (id, status) => api.put(`/materialrequests/${id}/status`, { status }),
   sendToPurchasing: (id) => api.put(`/materialrequests/${id}/send-to-purchasing`),
   sendToSuppliers: (id, supplierIds) => api.put(`/materialrequests/${id}/send-to-suppliers`, supplierIds),

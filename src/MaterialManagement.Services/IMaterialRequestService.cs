@@ -8,6 +8,7 @@ public interface IMaterialRequestService
     Task<List<MaterialRequest>> GetAllRequestsAsync();
     Task<MaterialRequest?> GetRequestByIdAsync(Guid id);
     Task<MaterialRequest> CreateRequestAsync(Guid userId, MaterialRequestCreateDto dto);
+    Task<MaterialRequest> UpdateRequestAsync(Guid id, MaterialRequestCreateDto dto);
     Task<MaterialRequest> UpdateRequestStatusAsync(Guid id, string status, Guid? approvedBy);
     Task<MaterialRequest> SendToPurchasingAsync(Guid id, Guid sentBy);
     Task<MaterialRequest> SendToSuppliersAsync(Guid id, List<Guid> supplierIds);

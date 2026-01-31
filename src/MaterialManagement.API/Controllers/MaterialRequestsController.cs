@@ -175,6 +175,40 @@ public class MaterialRequestsController : ControllerBase
         }
     }
 
+    [HttpPut("{id}")]
+    public async Task<ActionResult<object>> Update(Guid id, [FromBody] MaterialRequestCreateDto dto)
+    {
+        try
+        {
+            var request = await _requestService.UpdateRequestAsync(id, dto);
+            
+            return Ok(new
+            {
+                request.Id,
+                request.ProjectId,
+                request.RequestNumber,
+                request.Status,
+                request.RequiredDate,
+                request.Notes,
+                request.UpdatedAt,
+                Items = request.Items.Select(i => new
+                {
+                    i.Id,
+                    i.MaterialId,
+                    i.Quantity,
+                    i.Notes
+                }).ToList()
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating request: {Id}", id);
+            if (ex.Message.Contains("bekleyen"))
+                return BadRequest(new { message = ex.Message });
+            return StatusCode(500, new { message = ex.Message });
+        }
+    }
+
     [HttpPut("{id}/status")]
     public async Task<ActionResult<object>> UpdateStatus(
         Guid id,
