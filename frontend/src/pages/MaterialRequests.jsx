@@ -115,12 +115,15 @@ function MaterialRequests() {
 
   const getFilteredMaterialsForItem = (index) => {
     const query = (materialSearchQueries[index] || '').toLowerCase().trim()
-    if (!query) return materials
-    return materials.filter(m => 
+    // Minimum 2 karakter gerekli
+    if (query.length < 2) return []
+    // Filtreleme ve sadece ilk 3 sonucu döndür
+    const filtered = materials.filter(m => 
       (m.code?.toLowerCase().includes(query) || '') ||
       (m.name?.toLowerCase().includes(query) || '') ||
       (m.category?.toLowerCase().includes(query) || '')
     )
+    return filtered.slice(0, 3)
   }
 
   const handleSubmit = async (e) => {
@@ -454,14 +457,46 @@ function MaterialRequests() {
 
               {formData.items.map((item, index) => {
                 const filteredMats = getFilteredMaterialsForItem(index)
+                const selectedMaterial = item.materialId ? materials.find(m => m.id === item.materialId) : null
+                const searchQuery = (materialSearchQueries[index] || '').trim()
                 return (
                   <div key={index} className="request-item">
                     <div className="form-row">
                       <div className="form-group" style={{ flex: 1 }}>
                         <label>Malzeme</label>
+                        {/* Seçilen malzemeyi göster */}
+                        {selectedMaterial && (
+                          <div style={{ 
+                            padding: '8px 12px', 
+                            background: '#e8f5e9', 
+                            border: '1px solid #4caf50',
+                            borderRadius: '4px', 
+                            marginBottom: '8px',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                          }}>
+                            <span style={{ fontWeight: '500', color: '#2e7d32' }}>
+                              ✓ {selectedMaterial.code} - {selectedMaterial.name}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleItemChange(index, 'materialId', '')}
+                              style={{ 
+                                background: 'none', 
+                                border: 'none', 
+                                color: '#666', 
+                                cursor: 'pointer',
+                                fontSize: '16px'
+                              }}
+                            >
+                              ×
+                            </button>
+                          </div>
+                        )}
                         <input
                           type="text"
-                          placeholder="🔍 Malzeme ara (kod, ad, kategori)..."
+                          placeholder="🔍 Malzeme ara (en az 2 karakter)..."
                           value={materialSearchQueries[index] || ''}
                           onChange={(e) => handleMaterialSearch(index, e.target.value)}
                           style={{
@@ -473,24 +508,54 @@ function MaterialRequests() {
                             fontSize: '14px'
                           }}
                         />
-                        <select
-                          required
-                          value={item.materialId}
-                          onChange={(e) => handleItemChange(index, 'materialId', e.target.value)}
-                          style={{ width: '100%' }}
-                        >
-                          <option value="">Seçiniz</option>
-                          {filteredMats.map((m) => (
-                            <option key={m.id} value={m.id}>
-                              {m.code} - {m.name} {m.category ? `(${m.category})` : ''}
-                            </option>
-                          ))}
-                        </select>
-                        {filteredMats.length === 0 && (materialSearchQueries[index] || '').trim() && (
+                        {/* Arama sonuçları dropdown */}
+                        {searchQuery.length >= 2 && filteredMats.length > 0 && (
+                          <div style={{ 
+                            border: '1px solid #ddd', 
+                            borderRadius: '4px', 
+                            maxHeight: '150px', 
+                            overflowY: 'auto',
+                            background: '#fff',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                          }}>
+                            {filteredMats.map((m) => (
+                              <div
+                                key={m.id}
+                                onClick={() => {
+                                  handleItemChange(index, 'materialId', m.id)
+                                  handleMaterialSearch(index, '')
+                                }}
+                                style={{
+                                  padding: '10px 12px',
+                                  cursor: 'pointer',
+                                  borderBottom: '1px solid #eee',
+                                  transition: 'background 0.2s'
+                                }}
+                                onMouseEnter={(e) => e.target.style.background = '#f5f5f5'}
+                                onMouseLeave={(e) => e.target.style.background = '#fff'}
+                              >
+                                <div style={{ fontWeight: '500' }}>{m.code} - {m.name}</div>
+                                {m.category && <div style={{ fontSize: '12px', color: '#666' }}>{m.category}</div>}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {searchQuery.length >= 2 && filteredMats.length === 0 && (
                           <div style={{ fontSize: '12px', color: '#999', marginTop: '5px' }}>
                             Arama sonucu bulunamadı
                           </div>
                         )}
+                        {searchQuery.length > 0 && searchQuery.length < 2 && (
+                          <div style={{ fontSize: '12px', color: '#999', marginTop: '5px' }}>
+                            En az 2 karakter giriniz...
+                          </div>
+                        )}
+                        {/* Gizli required input - form validation için */}
+                        <input
+                          type="hidden"
+                          required
+                          value={item.materialId}
+                        />
                       </div>
                       <div className="form-group">
                         <label>Miktar</label>
