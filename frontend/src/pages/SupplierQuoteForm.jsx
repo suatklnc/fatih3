@@ -116,12 +116,20 @@ export default function SupplierQuoteForm() {
     }
 
     if (error) {
+        const isUsedToken = error.includes('daha önce kullanılmış')
+        const isExpiredToken = error.includes('süresi dolmuş')
+        
         return (
             <div className="quote-form-container">
-                <div className="quote-form-card error">
-                    <div className="error-icon">❌</div>
-                    <h2>Hata</h2>
-                    <p>{error}</p>
+                <div className={`quote-form-card ${isUsedToken ? 'already-submitted' : 'error'}`}>
+                    <div className="error-icon">{isUsedToken ? '✅' : isExpiredToken ? '⏰' : '❌'}</div>
+                    <h2>{isUsedToken ? 'Teklif Zaten Gönderildi' : isExpiredToken ? 'Form Süresi Dolmuş' : 'Hata'}</h2>
+                    <p>{isUsedToken ? 'Bu teklif formu daha önce başarıyla gönderilmiştir.' : error}</p>
+                    {isUsedToken && (
+                        <div className="already-submitted-info">
+                            <p>Teklifiniz sistemde kayıtlıdır. Ek bilgi için lütfen firma ile iletişime geçin.</p>
+                        </div>
+                    )}
                 </div>
             </div>
         )

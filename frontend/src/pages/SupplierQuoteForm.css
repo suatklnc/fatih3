@@ -20,10 +20,28 @@
 
 .quote-form-card.loading,
 .quote-form-card.error,
-.quote-form-card.success {
+.quote-form-card.success,
+.quote-form-card.already-submitted {
     max-width: 500px;
     text-align: center;
     padding: 60px 40px;
+}
+
+.quote-form-card.already-submitted {
+    border: 3px solid #28a745;
+}
+
+.quote-form-card.already-submitted h2 {
+    color: #28a745;
+}
+
+.already-submitted-info {
+    background: #d4edda;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+    color: #155724;
+    font-size: 14px;
 }
 
 .spinner {
