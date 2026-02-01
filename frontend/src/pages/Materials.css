@@ -39,6 +39,7 @@
 
 /* ==================== TABLET ==================== */
 @media (max-width: 992px) {
+
   .materials table th,
   .materials table td {
     padding: 10px 8px;
@@ -169,17 +170,59 @@
   font-family: monospace;
 }
 
-/* Column widths */
-.col-name { 
-  min-width: 150px;
-  max-width: none;
+/* Materials table base styles */
+.materials table {
+  width: 100%;
+  table-layout: auto;
+  border-collapse: collapse;
 }
-.col-code { min-width: 100px; }
-.col-stock, .col-minstock { text-align: center; width: 60px; }
-.col-actions { width: 60px; text-align: center; }
+
+.materials table th,
+.materials table td {
+  padding: 10px 8px;
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid #eee;
+  white-space: nowrap;
+}
+
+/* Column widths */
+.col-name {
+  min-width: 200px;
+  white-space: normal !important;
+}
+
+.col-code {
+  min-width: 120px;
+}
+
+.col-unit {
+  min-width: 70px;
+}
+
+.col-category {
+  min-width: 80px;
+}
+
+.col-stock,
+.col-minstock {
+  text-align: center;
+  min-width: 60px;
+}
+
+.col-actions {
+  min-width: 70px;
+  text-align: center;
+}
+
+/* Desktop: ensure all columns are visible */
+.materials .hide-mobile {
+  display: table-cell !important;
+}
 
 /* ==================== MOBILE ==================== */
 @media (max-width: 768px) {
+
   /* Hide columns on mobile */
   .materials .hide-mobile {
     display: none !important;
@@ -495,29 +538,44 @@
 /* ==================== USERS PAGE STYLES ==================== */
 .users-table {
   width: 100%;
-  table-layout: fixed;
+  table-layout: auto;
+  border-collapse: collapse;
+}
+
+.users-table th,
+.users-table td {
+  padding: 12px 10px;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+  border-bottom: 1px solid #eee;
 }
 
 .col-user-name {
-  width: 50%;
+  min-width: 150px;
+  white-space: normal;
 }
 
 .col-email {
-  width: auto;
+  min-width: 200px;
 }
 
 .col-role {
-  width: 60px;
+  min-width: 80px;
   text-align: center;
 }
 
-.col-company,
+.col-company {
+  min-width: 100px;
+}
+
 .col-status {
-  width: auto;
+  min-width: 70px;
+  text-align: center;
 }
 
 .col-user-actions {
-  width: 70px;
+  min-width: 100px;
   text-align: right;
 }
 
@@ -529,6 +587,7 @@
   font-weight: 500;
   display: block;
   word-break: break-word;
+  white-space: normal;
 }
 
 .user-email-mobile {
@@ -539,11 +598,12 @@
 
 .role-badge {
   display: inline-block;
-  padding: 2px 6px;
-  border-radius: 10px;
-  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
   background: #e3f2fd;
   color: #1565c0;
+  white-space: nowrap;
 }
 
 .role-badge.role-none {
@@ -552,8 +612,8 @@
 }
 
 .btn-grant {
-  font-size: 11px;
-  padding: 4px 6px;
+  font-size: 12px;
+  padding: 6px 12px;
   white-space: nowrap;
 }
 
@@ -567,13 +627,25 @@
 
 .users-card .action-buttons-compact {
   display: inline-flex;
-  gap: 3px;
+  gap: 6px;
   justify-content: flex-end;
 }
 
 .users-card .btn-icon {
-  padding: 4px 6px;
-  font-size: 11px;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+/* Table responsive wrapper */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Desktop: ensure all columns are visible */
+.users-card .hide-mobile {
+  display: table-cell !important;
 }
 
 /* Users mobile */
