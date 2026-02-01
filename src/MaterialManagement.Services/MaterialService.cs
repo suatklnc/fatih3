@@ -62,24 +62,41 @@ public class MaterialService : IMaterialService
             var hasSearch = !string.IsNullOrWhiteSpace(search);
             var searchPattern = hasSearch ? $"%{search!.ToLower()}%" : "";
             
-            // Toplam sayıyı al
-            int totalCount;
-            if (hasSearch)
+            // Toplam sayıyı al - Supabase'in 1000 limit sorunundan kaçınmak için
+            // pagination ile tüm ID'leri sayıyoruz
+            int totalCount = 0;
+            var countPageSize = 1000;
+            var countOffset = 0;
+            
+            while (true)
             {
-                var countResponse = await _supabaseService.Client
-                    .From<Material>()
-                    .Filter("code", Supabase.Postgrest.Constants.Operator.ILike, searchPattern)
-                    .Select("id")
-                    .Get();
-                totalCount = countResponse.Models.Count;
-            }
-            else
-            {
-                var countResponse = await _supabaseService.Client
-                    .From<Material>()
-                    .Select("id")
-                    .Get();
-                totalCount = countResponse.Models.Count;
+                Supabase.Postgrest.Responses.ModeledResponse<Material> countResponse;
+                if (hasSearch)
+                {
+                    countResponse = await _supabaseService.Client
+                        .From<Material>()
+                        .Filter("code", Supabase.Postgrest.Constants.Operator.ILike, searchPattern)
+                        .Select("id")
+                        .Offset(countOffset)
+                        .Limit(countPageSize)
+                        .Get();
+                }
+                else
+                {
+                    countResponse = await _supabaseService.Client
+                        .From<Material>()
+                        .Select("id")
+                        .Offset(countOffset)
+                        .Limit(countPageSize)
+                        .Get();
+                }
+                
+                totalCount += countResponse.Models.Count;
+                
+                if (countResponse.Models.Count < countPageSize)
+                    break;
+                    
+                countOffset += countPageSize;
             }
             
             // Sayfalanmış veriyi al

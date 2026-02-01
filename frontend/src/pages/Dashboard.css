@@ -15,6 +15,71 @@
   }
 }
 
+/* Staggered card animation */
+@keyframes cardSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stat-card {
+  animation: cardSlideIn 0.4s ease-out forwards;
+  opacity: 0;
+}
+
+/* ==================== SKELETON LOADER STYLES ==================== */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-card {
+  animation: none;
+  opacity: 1;
+}
+
+.skeleton-pulse {
+  background: linear-gradient(90deg,
+      #f0f0f0 25%,
+      #e0e0e0 50%,
+      #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 0.5rem;
+}
+
+.skeleton-icon {
+  background: transparent !important;
+}
+
+.skeleton-icon .skeleton-pulse {
+  width: 100%;
+  height: 100%;
+  border-radius: 1rem;
+}
+
+.skeleton-value {
+  height: 2rem;
+  width: 80px;
+  margin-bottom: 0.5rem;
+}
+
+.skeleton-label {
+  height: 1rem;
+  width: 120px;
+}
+
 .dashboard h1 {
   margin-bottom: 2rem;
   font-size: 1.75rem;
